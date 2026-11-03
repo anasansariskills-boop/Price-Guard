@@ -1,0 +1,42 @@
+[
+  {
+    "id": "demo-user",
+    "email": "demo@priceguard.audit",
+    "name": "Hospitality Procurement Demo",
+    "businessName": "The Brass Palm Hospitality Group",
+    "businessType": "Restaurant",
+    "createdAt": "2026-11-02T13:26:12.459Z",
+    "passwordHash": "demo_hash",
+    "salt": "demo_salt"
+  },
+  {
+    "id": "user_1793625974826_c94re",
+    "email": "test_audit_1793625974806@palmgrouphospitality.com",
+    "name": "Chef Marcus Sterling",
+    "businessName": "The Sterling Grill Group",
+    "businessType": "Restaurant",
+    "createdAt": "2026-11-02T13:26:14.826Z",
+    "salt": "78ca399aa98f122931dfb373e48193b5",
+    "passwordHash": "9fc4c8faec5baab271fd7674d74ce015297f83062dfed68d96a5ea1f08c89180ec2a92e1a576c0a21346f858a134f45d29ce976f7f53e5a3d74952a0d05d80f5"
+  },
+  {
+    "id": "user_1793626152714_r3zcn",
+    "email": "test_audit_1793626152693@palmgrouphospitality.com",
+    "name": "Chef Marcus Sterling",
+    "businessName": "The Sterling Grill Group",
+    "businessType": "Restaurant",
+    "createdAt": "2026-11-02T13:29:12.714Z",
+    "salt": "036d9ddd139043bc088462b1bff98fd9",
+    "passwordHash": "75b42b89ea87bac458ea31bc2f88b57137d5ceab8b7c2c20e4eaac4e306711d3460f93417360597402f6538fba36fd1799cb3e54b93c51439c13b5e9e2c503ce"
+  },
+  {
+    "id": "user_1793626364861_fobzw",
+    "email": "test_audit_1793626364844@palmgrouphospitality.com",
+    "name": "Chef Marcus Sterling",
+    "businessName": "The Sterling Grill Group",
+    "businessType": "Restaurant",
+    "createdAt": "2026-11-02T13:32:44.861Z",
+    "salt": "1b1617e4e50f86bce039122a79653236",
+    "passwordHash": "8b21c358eb0f99914bb9ffb61d8b76a8faf3595234a5d206c8ea236f4902aafa59003cb5845b6bbbb9527d8024c0019505cadae42c7500c177578fffaee27c3b"
+  }
+]

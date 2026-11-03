@@ -1,0 +1,24 @@
+[
+  {
+    "id": "lead_1793626153844_4mvwl",
+    "name": "Chef Marcus Sterling",
+    "email": "test_audit_1793626152693@palmgrouphospitality.com",
+    "businessName": "The Sterling Grill Group",
+    "businessType": "Restaurant",
+    "locationsCount": "3",
+    "estimatedMonthlySpend": "$75,000 to $150,000",
+    "message": "Interested in running this across all 3 kitchens.",
+    "createdAt": "2026-11-02T13:29:13.845Z"
+  },
+  {
+    "id": "lead_1793626366100_82x0b",
+    "name": "Chef Marcus Sterling",
+    "email": "test_audit_1793626364844@palmgrouphospitality.com",
+    "businessName": "The Sterling Grill Group",
+    "businessType": "Restaurant",
+    "locationsCount": "3",
+    "estimatedMonthlySpend": "$75,000 to $150,000",
+    "message": "Interested in running this across all 3 kitchens.",
+    "createdAt": "2026-11-02T13:32:46.100Z"
+  }
+]
