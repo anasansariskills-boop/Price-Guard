@@ -192,3 +192,35 @@ export async function deleteAuditSession(id: string): Promise<boolean> {
     return false;
   }
 }
+
+export interface AIAssistantAction {
+  type: string;
+  target: string;
+}
+
+export async function askAIAssistant(params: {
+  message: string;
+  history?: Array<{ role: 'user' | 'assistant'; text: string }>;
+  currentView?: string;
+}): Promise<{ success: boolean; reply: string; action?: AIAssistantAction | null; source?: string; error?: string }> {
+  try {
+    const res = await fetch('/api/assistant/chat', {
+      method: 'POST',
+      headers: { 'Content-Type': 'application/json' },
+      body: JSON.stringify(params)
+    });
+    const data = await res.json();
+    if (!res.ok) {
+      return { success: false, reply: data.error || 'Assistant service unavailable.' };
+    }
+    return {
+      success: true,
+      reply: data.reply,
+      action: data.action,
+      source: data.source
+    };
+  } catch (err: any) {
+    return { success: false, reply: 'Network error communicating with AI guide.' };
+  }
+}
+

@@ -726,8 +726,150 @@ app.post('/api/leads', (req, res) => {
   }
 });
 
-app.get('/api/leads', (req, res) => {
-  res.json({ leads: getAllLeads() });
+// ==========================================
+// AI ASSISTANT NAVIGATION & GUIDANCE ROUTE
+// ==========================================
+app.post('/api/assistant/chat', async (req, res) => {
+  try {
+    const { message, history, currentView } = req.body;
+    if (!message || typeof message !== 'string') {
+      return res.status(400).json({ error: 'Message is required.' });
+    }
+
+    // Try Gemini AI first if configured
+    if (ai) {
+      try {
+        const systemInstruction = `You are the friendly, intelligent in-app AI Assistant & Navigator for PriceGuard (Hospitality Supplier Invoice Auditing).
+Your main job is to guide users on where every option, feature, and workflow is located in the application, and explain how to use it.
+You can communicate in Urdu, Roman Urdu, or English depending on how the user addresses you. If the user writes in Urdu or Roman Urdu, reply warmly in natural Roman Urdu with clear steps!
+
+Application Map & Options Guide:
+1. "New Audit" (Naya Audit shuru karna):
+   - Location: Click "Check Invoices" on the Hero page OR click "New Audit" in the top navigation bar.
+   - Step 1: Upload Agreed Price List (CSV or Excel) or paste text / use sample catalog.
+   - Step 2: Upload Supplier Invoices (PDF files or paste invoice text).
+   - Step 3: Review Extracted Line Items & click "Run Deterministic Audit".
+2. "Dashboard" (Audit Results & History dekhna):
+   - Location: Click "Dashboard" in the top navigation bar.
+   - Metric Cards: Strictly separates "Verified Rate Overcharges" ($) from "Possible Duplicate Exposure" ($) and "Unmatched & Review Needed".
+   - Findings Table: Filter by "All", "Rate Overcharges", "Needs Review", or "Unmatched".
+   - "Export CSV": Top right of audit detail screen, downloads the verified breakdown.
+   - "Print / PDF": Top right of audit detail screen, opens browser print / PDF export.
+   - "Evidence": Click the "Evidence" button on any row in the findings table to inspect exact rate math.
+   - "Delete": Permanently removes the audit record.
+3. "Sample Audit" (Bina files ke live demo try karna):
+   - Location: Scroll down on the Home page to the "Interactive Sample Audit" section, or click "Explore Sample Audit" in the hero.
+4. "Cost Calculator" (Estimated savings check karna):
+   - Location: Scroll down on the Home page to the "Cost Exposure Calculator" section.
+5. "Account Login / Register":
+   - Location: Top right of navbar, click "Sign In" or user icon. All audits and uploaded files are securely tied to the user account in SQLite.
+
+Navigation tags:
+When you suggest a destination, you can append a tag on a new line:
+[ACTION:NAVIGATE:new-audit] -> if advising them to start a new audit
+[ACTION:NAVIGATE:dashboard] -> if advising them to check the dashboard
+[ACTION:NAVIGATE:landing] -> if advising them to go to home/landing page
+[ACTION:SCROLL:sample-audit] -> if advising them to check sample audit
+[ACTION:SCROLL:calculator] -> if advising them to check calculator
+[ACTION:OPEN:auth] -> if advising them to sign in or register
+
+Keep your guidance clear, scannable, and helpful with bullet points where appropriate.`;
+
+        const contents: any[] = [];
+        if (Array.isArray(history)) {
+          for (const h of history.slice(-6)) {
+            contents.push({
+              role: h.role === 'user' ? 'user' : 'model',
+              parts: [{ text: h.text }]
+            });
+          }
+        }
+        contents.push({
+          role: 'user',
+          parts: [{ text: `Current User View: ${currentView || 'unknown'}\n\nUser Question: ${message}` }]
+        });
+
+        const geminiPromise = ai.models.generateContent({
+          model: 'gemini-3.8-flash',
+          contents,
+          config: {
+            systemInstruction
+          }
+        });
+
+        const timeoutPromise = new Promise((_, reject) =>
+          setTimeout(() => reject(new Error('AI Assistant timeout')), 2000)
+        );
+
+        const geminiRes = await Promise.race([geminiPromise, timeoutPromise]) as any;
+
+        const reply = geminiRes.text;
+        if (reply) {
+          let action: { type: string; target: string } | null = null;
+          const actionMatch = reply.match(/\[ACTION:([A-Z]+):([a-z\-]+)\]/);
+          if (actionMatch) {
+            action = { type: actionMatch[1], target: actionMatch[2] };
+          }
+          const cleanReply = reply.replace(/\[ACTION:[A-Z]+:[a-z\-]+\]/g, '').trim();
+
+          return res.json({
+            success: true,
+            reply: cleanReply,
+            action,
+            source: 'gemini'
+          });
+        }
+      } catch (geminiErr: any) {
+        console.warn('Gemini assistant call failed, using intelligent local guide:', geminiErr.message || geminiErr);
+      }
+    }
+
+    // Contextual deterministic fallback guide (fluent Roman Urdu / English)
+    const lower = message.toLowerCase();
+    let reply = '';
+    let action: { type: string; target: string } | null = null;
+
+    if (lower.includes('audit') && (lower.includes('kahan') || lower.includes('kaise') || lower.includes('start') || lower.includes('shuru') || lower.includes('new') || lower.includes('run'))) {
+      reply = `**Naya Audit shuru karne ke liye:**\n\n1. **Top Navbar** mein **"New Audit"** par click karein (ya neeche diye gaye button par click karein).\n2. **Step 1 (Price List):** Apna agreed supplier catalog CSV/Excel format mein upload karein ya text paste karein.\n3. **Step 2 (Invoices):** Supplier ki PDF invoices upload karein.\n4. **Step 3 (Review & Run):** Extracted items check karke **"Run Deterministic Audit"** dabayein.\n\nAapko foran rate overcharges aur duplicate detection mil jayegi!`;
+      action = { type: 'NAVIGATE', target: 'new-audit' };
+    } else if (lower.includes('price list') || lower.includes('pricelist') || lower.includes('rate list') || lower.includes('catalog') || lower.includes('contract')) {
+      reply = `**Supplier Price List kahan upload karni hai?**\n\n- Top bar mein **"New Audit"** par jayein.\n- **Step 1: Agreed Price List** screen par aapko do options milenge:\n  1. **Upload File:** Apna CSV ya XLSX file choose karein.\n  2. **Paste CSV Text:** Direct product SKU, name, agreed rate paste karein.\n- Upload hone ke baad **"Proceed to Step 2"** click karein.`;
+      action = { type: 'NAVIGATE', target: 'new-audit' };
+    } else if (lower.includes('invoice') || lower.includes('pdf') || lower.includes('bill')) {
+      reply = `**Supplier Invoices (PDF/Bills) kahan upload karein?**\n\n- **New Audit Wizard** ke **Step 2** par jayein.\n- Wahan **"Drop supplier invoice PDFs"** ka section hai jahan aap aik ya aik se ziyaada PDF invoices upload kar sakte hain.\n- Native parser invoice number, date, line items aur total amounts extract karega.`;
+      action = { type: 'NAVIGATE', target: 'new-audit' };
+    } else if (lower.includes('duplicate') || lower.includes('farq') || lower.includes('difference') || lower.includes('separation')) {
+      reply = `**Price Overcharges vs Duplicate Invoices mein kya farq hai?**\n\nPriceGuard dono ko strictly separate rakhta hai:\n\n1. **Verified Rate Overcharges (Red Card):** Yeh woh items hain jahan supplier ne contract price se ziyaada unit rate charge kiya hai (e.g. $120 ki jagah $135).\n2. **Possible Duplicate Exposure (Amber Card):** Agar wahi invoice number dobara submit ho gaya ho, to poora invoice amount duplicate exposure mein alag show hota hai.\n\nDuplicate raqam ko line-item overcharge mein merge nahi kiya jata taake accurate financial reporting rahay!`;
+      action = { type: 'NAVIGATE', target: 'dashboard' };
+    } else if (lower.includes('export') || lower.includes('download') || lower.includes('csv') || lower.includes('pdf') || lower.includes('report') || lower.includes('print')) {
+      reply = `**Audit Report download ya export kahan se hoti hai?**\n\n1. **Dashboard** mein ja kar kisi bhi audit ke **"View Results"** par click karein.\n2. Screen ke top-right par aapko do buttons milenge:\n   - **"Export CSV":** Tamam line items, calculated unit differences aur evidence formula ke sath spreadsheet download karta hai.\n   - **"Print / PDF":** Browser print dialog kholta hai jahan se aap report ko PDF save kar sakte hain.`;
+      action = { type: 'NAVIGATE', target: 'dashboard' };
+    } else if (lower.includes('login') || lower.includes('sign in') || lower.includes('account') || lower.includes('register') || lower.includes('logout')) {
+      reply = `**User Account & Authentication:**\n\n- Top right navbar mein **"Sign In"** button par click karein.\n- Agar pehle se account hai to Login karein, warna **"Create Account"** tab par click karke naya account banayein.\n- Login hone ke baad aapke tamam audit reports aur files secure SQLite database mein store rehti hain aur refresh/logout ke baad bhi safe rehti hain.`;
+      action = { type: 'OPEN', target: 'auth' };
+    } else if (lower.includes('sample') || lower.includes('demo') || lower.includes('test')) {
+      reply = `**Interactive Sample Audit kahan hai?**\n\n- Home page par scroll karein ya Hero section mein **"Explore Sample Audit"** button dabayein.\n- Yeh aapko live demo par le jayega jahan bina koi file upload kiye Restaurant aur Hotel sample audits inspect kar sakte hain!`;
+      action = { type: 'SCROLL', target: 'sample-audit' };
+    } else if (lower.includes('calculator') || lower.includes('saving') || lower.includes('bachat') || lower.includes('spend')) {
+      reply = `**Cost Exposure Calculator:**\n\n- Home page par scroll karein, Problem section ke foran baad **Cost Exposure Calculator** mojood hai.\n- Wahan aap apna monthly supplier spend select karke estimated annual overcharge exposure check kar sakte hain.`;
+      action = { type: 'SCROLL', target: 'calculator' };
+    } else if (lower.includes('delete') || lower.includes('remove') || lower.includes('khatam')) {
+      reply = `**Audit Record Delete karna:**\n\n- **Dashboard** mein ja kar mutaliqa audit open karein.\n- Header ke right side par laal rang ka **"Delete"** button mojood hai.\n- Confirm karne par audit database se permanently remove ho jayega.`;
+      action = { type: 'NAVIGATE', target: 'dashboard' };
+    } else {
+      reply = `Assalam-o-Alaikum! Main **PriceGuard AI Guide** hoon.\n\nMain aapko guide kar sakta hoon ke app ka har option kahan hai:\n- **"Naya audit kahan se shuru karein?"**\n- **"Price list kahan upload karni hai?"**\n- **"PDF invoices kahan daalni hain?"**\n- **"Audit report CSV/PDF kahan se download hogi?"**\n- **"Overcharges aur duplicates ka farq kahan dikhta hai?"**\n\nAap jis option ke baray mein bhi poochenge, main aapko step-by-step bataonga aur direct wahan le jaonga!`;
+    }
+
+    return res.json({
+      success: true,
+      reply,
+      action,
+      source: 'local_guide'
+    });
+  } catch (err: any) {
+    console.error('Assistant chat route error:', err);
+    return res.status(500).json({ error: 'Failed to process assistant request.' });
+  }
 });
 
 // ==========================================

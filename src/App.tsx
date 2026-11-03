@@ -13,6 +13,7 @@ import { Footer } from './components/Footer';
 import { PilotRequestModal } from './components/PilotRequestModal';
 import { AuthModal } from './components/AuthModal';
 import { AuditDashboard } from './components/AuditDashboard';
+import { AIAssistantWidget } from './components/AIAssistantWidget';
 import { getStoredAuth, logoutAccount } from './services/api';
 import { UserAccount } from './types/index.ts';
 
@@ -128,6 +129,20 @@ export function App() {
         onSuccess={(user) => {
           setCurrentUser(user);
           handleNavigate('dashboard');
+        }}
+      />
+
+      {/* Floating PriceGuard AI Assistant & Navigator */}
+      <AIAssistantWidget
+        currentView={currentView}
+        onNavigate={handleNavigate}
+        onOpenAuth={() => setIsAuthModalOpen(true)}
+        onScrollToSample={handleScrollToSample}
+        onScrollToCalculator={() => {
+          const el = document.getElementById('calculator');
+          if (el) {
+            el.scrollIntoView({ behavior: 'smooth' });
+          }
         }}
       />
     </div>
