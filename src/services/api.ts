@@ -107,7 +107,7 @@ export async function extractInvoiceFromDocument(params: {
   fileData?: string;
   mimeType?: string;
   fileName?: string;
-}): Promise<{ success: boolean; invoice?: InvoiceDocument; error?: string; method?: string }> {
+}): Promise<{ success: boolean; invoice?: InvoiceDocument; fileId?: string; error?: string; isScannedDocument?: boolean; ocrStatus?: string; method?: string }> {
   try {
     const res = await fetch('/api/extract/invoice', {
       method: 'POST',
@@ -116,9 +116,19 @@ export async function extractInvoiceFromDocument(params: {
     });
     const data = await res.json();
     if (!res.ok) {
-      return { success: false, error: data.error || 'Extraction failed.' };
+      return {
+        success: false,
+        error: data.error || 'Extraction failed.',
+        isScannedDocument: data.isScannedDocument,
+        ocrStatus: data.ocrStatus
+      };
     }
-    return { success: true, invoice: data.invoice, method: data.method };
+    return {
+      success: true,
+      invoice: data.invoice,
+      fileId: data.fileId,
+      method: data.method
+    };
   } catch (err: any) {
     return { success: false, error: err.message || 'Error processing invoice.' };
   }
@@ -153,6 +163,7 @@ export async function executeAudit(params: {
   title?: string;
   supplierName?: string;
   industry?: 'restaurant' | 'hotel' | 'other';
+  fileIds?: string[];
 }): Promise<{ success: boolean; audit?: AuditSession; error?: string }> {
   try {
     const res = await fetch('/api/audit/run', {

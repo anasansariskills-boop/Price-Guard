@@ -58,17 +58,23 @@ SPEC-010,White Truffle Oil 250ml,19.50,EA,250ml Glass`
 
   // Wizard Step 2 & 3: Invoices & Extracted Line Items
   const [uploadedFilesList, setUploadedFilesList] = useState<{ name: string; size: number }[]>([]);
+  const [uploadedFileIds, setUploadedFileIds] = useState<string[]>([]);
   const [extractedInvoices, setExtractedInvoices] = useState<InvoiceDocument[]>([]);
   const [isExtracting, setIsExtracting] = useState<boolean>(false);
   const [isAuditing, setIsAuditing] = useState<boolean>(false);
 
-  // Load server-saved audits on mount & on user change
+  // Load server-saved audits on mount & on user change (strictly isolated)
   useEffect(() => {
     async function load() {
-      const serverAudits = await getSavedAudits();
-      if (serverAudits && serverAudits.length > 0) {
-        setAudits([SAMPLE_RESTAURANT_AUDIT, SAMPLE_HOTEL_AUDIT, ...serverAudits]);
+      if (currentUser && currentUser.id !== 'demo-user') {
+        const serverAudits = await getSavedAudits();
+        if (serverAudits && serverAudits.length > 0) {
+          setAudits([...serverAudits, SAMPLE_RESTAURANT_AUDIT, SAMPLE_HOTEL_AUDIT]);
+          return;
+        }
       }
+      // Demo samples for unauthenticated or public viewers (read-only)
+      setAudits([SAMPLE_RESTAURANT_AUDIT, SAMPLE_HOTEL_AUDIT]);
     }
     load();
   }, [currentUser]);
@@ -213,6 +219,8 @@ SPEC-010,White Truffle Oil 250ml,19.50,EA,250ml Glass`
     setIsExtracting(true);
     const newDocs: InvoiceDocument[] = [];
     const fileInfos: { name: string; size: number }[] = [];
+    const newFileIds: string[] = [];
+    let scannedCount = 0;
 
     for (let i = 0; i < files.length; i++) {
       const file = files[i];
@@ -230,17 +238,27 @@ SPEC-010,White Truffle Oil 250ml,19.50,EA,250ml Glass`
         mimeType: file.type || 'application/pdf'
       });
 
+      if (res.isScannedDocument) {
+        scannedCount++;
+      }
+
       if (res.success && res.invoice) {
         newDocs.push(res.invoice);
+        if (res.fileId) newFileIds.push(res.fileId);
       }
     }
 
     setIsExtracting(false);
+    if (scannedCount > 0) {
+      alert(`${scannedCount} document(s) appear to be scanned images with no embedded text. Automated OCR requires an active GEMINI_API_KEY.`);
+    }
+
     if (newDocs.length > 0) {
       setExtractedInvoices(newDocs);
       setUploadedFilesList(fileInfos);
+      setUploadedFileIds(newFileIds);
       setWizardStep(3);
-    } else {
+    } else if (scannedCount === 0) {
       alert('Unable to extract data from uploaded files. Please ensure documents are valid PDFs or images.');
     }
   };
@@ -259,13 +277,19 @@ SPEC-010,White Truffle Oil 250ml,19.50,EA,250ml Glass`
 
   // Execute deterministic comparison in step 3
   const handleRunNewAudit = async () => {
+    if (!currentUser || currentUser.id === 'demo-user') {
+      onOpenAuth();
+      return;
+    }
+
     setIsAuditing(true);
     const res = await executeAudit({
       priceList: parsedPriceList,
       invoices: extractedInvoices,
       title: auditTitle,
       supplierName,
-      industry
+      industry,
+      fileIds: uploadedFileIds
     });
     setIsAuditing(false);
 

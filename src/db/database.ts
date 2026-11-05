@@ -80,8 +80,16 @@ db.exec(`
   CREATE INDEX IF NOT EXISTS idx_audits_user ON audits(user_id);
 `);
 
-// Seed default demo user
+// Password helpers
+export function hashPassword(password: string, salt: string): string {
+  return crypto.pbkdf2Sync(password, salt, 10000, 64, 'sha512').toString('hex');
+}
+
+// Seed default demo user with secure hashed credentials
 const findDemoUser = db.prepare('SELECT id FROM users WHERE id = ?');
+const demoSalt = crypto.randomBytes(16).toString('hex');
+const demoHash = hashPassword('DemoAccess2026!', demoSalt);
+
 if (!findDemoUser.get('demo-user')) {
   const insertUser = db.prepare(`
     INSERT INTO users (id, email, password_hash, salt, name, business_name, business_type, created_at)
@@ -90,18 +98,16 @@ if (!findDemoUser.get('demo-user')) {
   insertUser.run(
     'demo-user',
     'demo@priceguard.audit',
-    'demo_precomputed_hash',
-    'demo_salt',
+    demoHash,
+    demoSalt,
     'Hospitality Procurement Demo',
     'The Brass Palm Hospitality Group',
     'Restaurant',
     new Date().toISOString()
   );
-}
-
-// Password helpers
-export function hashPassword(password: string, salt: string): string {
-  return crypto.pbkdf2Sync(password, salt, 10000, 64, 'sha512').toString('hex');
+} else {
+  // Ensure existing demo-user has valid hash so it cannot be bypassed
+  db.prepare('UPDATE users SET password_hash = ?, salt = ? WHERE id = ?').run(demoHash, demoSalt, 'demo-user');
 }
 
 // User Operations
@@ -157,10 +163,9 @@ export function authenticateUser(email: string, password: string): { user: UserA
   const row = db.prepare('SELECT * FROM users WHERE email = ?').get(normalizedEmail) as any;
   if (!row) return null;
 
-  if (row.id !== 'demo-user') {
-    const computedHash = hashPassword(password, row.salt);
-    if (computedHash !== row.password_hash) return null;
-  }
+  // Strict password verification for ALL accounts including demo-user. No bypasses.
+  const computedHash = hashPassword(password, row.salt);
+  if (computedHash !== row.password_hash) return null;
 
   const token = createSession(row.id);
   return {
@@ -235,11 +240,12 @@ export function saveAuditSession(audit: AuditSession): void {
 }
 
 export function getAuditsForUser(userId: string): AuditSession[] {
-  // Return user's private audits plus public demo audits if demo user
+  if (!userId) return [];
+  // Strictly return only audits belonging to this authenticated user
   const rows = db.prepare(`
-    SELECT * FROM audits WHERE user_id = ? OR (user_id = 'demo-user' AND ? = 'demo-user')
+    SELECT * FROM audits WHERE user_id = ?
     ORDER BY created_at DESC
-  `).all(userId, userId) as any[];
+  `).all(userId) as any[];
 
   return rows.map(r => ({
     id: r.id,
@@ -256,8 +262,10 @@ export function getAuditsForUser(userId: string): AuditSession[] {
 }
 
 export function getAuditById(auditId: string, userId: string): AuditSession | null {
+  if (!userId) return null;
+  // Strictly isolate private audits by user_id
   const r = db.prepare(`
-    SELECT * FROM audits WHERE id = ? AND (user_id = ? OR user_id = 'demo-user')
+    SELECT * FROM audits WHERE id = ? AND user_id = ?
   `).get(auditId, userId) as any;
 
   if (!r) return null;
@@ -276,8 +284,14 @@ export function getAuditById(auditId: string, userId: string): AuditSession | nu
 }
 
 export function deleteAuditById(auditId: string, userId: string): boolean {
-  // Find associated files to remove from disk
-  const files = db.prepare('SELECT storage_path FROM uploaded_files WHERE audit_id = ? AND (user_id = ? OR user_id = \'demo-user\')').all(auditId, userId) as any[];
+  if (!userId) return false;
+  // Sample demonstration audits are read-only
+  if (auditId.startsWith('sample-') || auditId === 'sample-restaurant-session' || auditId === 'sample-hotel-session') {
+    return false;
+  }
+
+  // Find associated private files to remove from disk
+  const files = db.prepare('SELECT id, storage_path FROM uploaded_files WHERE audit_id = ? AND user_id = ?').all(auditId, userId) as any[];
   files.forEach(f => {
     try {
       if (fs.existsSync(f.storage_path)) fs.unlinkSync(f.storage_path);
@@ -286,12 +300,16 @@ export function deleteAuditById(auditId: string, userId: string): boolean {
     }
   });
 
-  const res = db.prepare('DELETE FROM audits WHERE id = ? AND (user_id = ? OR user_id = \'demo-user\')').run(auditId, userId);
+  // Delete records from uploaded_files table
+  db.prepare('DELETE FROM uploaded_files WHERE audit_id = ? AND user_id = ?').run(auditId, userId);
+
+  // Strictly delete audit only if owned by this user
+  const res = db.prepare('DELETE FROM audits WHERE id = ? AND user_id = ?').run(auditId, userId);
   return res.changes > 0;
 }
 
 // File Storage Helpers
-export function registerUploadedFile(userId: string, originalName: string, buffer: Buffer, mimeType: string, auditId?: string): string {
+export function registerUploadedFile(userId: string, originalName: string, buffer: Buffer, mimeType: string, auditId?: string): { fileId: string; storagePath: string } {
   const fileId = `file_${Date.now()}_${crypto.randomBytes(4).toString('hex')}`;
   const safeFilename = `${fileId}_${path.basename(originalName).replace(/[^a-zA-Z0-9._-]/g, '_')}`;
   const storagePath = path.join(UPLOADS_DIR, safeFilename);
@@ -303,7 +321,15 @@ export function registerUploadedFile(userId: string, originalName: string, buffe
     VALUES (?, ?, ?, ?, ?, ?, ?, ?)
   `);
   stmt.run(fileId, userId, auditId || null, originalName, storagePath, mimeType, buffer.length, new Date().toISOString());
-  return storagePath;
+  return { fileId, storagePath };
+}
+
+export function linkFilesToAudit(auditId: string, userId: string, fileIds: string[]): void {
+  if (!fileIds || fileIds.length === 0 || !userId) return;
+  const updateStmt = db.prepare('UPDATE uploaded_files SET audit_id = ? WHERE id = ? AND user_id = ?');
+  for (const fid of fileIds) {
+    updateStmt.run(auditId, fid, userId);
+  }
 }
 
 // Lead Operations

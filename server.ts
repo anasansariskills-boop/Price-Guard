@@ -29,21 +29,21 @@ import {
   getAuditById,
   deleteAuditById,
   registerUploadedFile,
+  linkFilesToAudit,
   saveLead,
   getAllLeads,
   getDatabaseStats
 } from './src/db/database.ts';
 
-// Authentication middleware helper
-function getAuthenticatedUserId(req: express.Request): string {
+// Authentication middleware helper (Strict: returns null when unauthenticated, NO demo-user fallback)
+function getAuthenticatedUserId(req: express.Request): string | null {
   const authHeader = req.headers.authorization;
   if (authHeader && authHeader.startsWith('Bearer ')) {
     const token = authHeader.split(' ')[1];
     const userId = validateSession(token);
     if (userId) return userId;
   }
-  // Default to demo-user if unauthenticated
-  return 'demo-user';
+  return null;
 }
 
 // Server-Side Gemini Initialization
@@ -124,9 +124,12 @@ app.post('/api/auth/login', (req, res) => {
 
 app.get('/api/auth/me', (req, res) => {
   const userId = getAuthenticatedUserId(req);
+  if (!userId) {
+    return res.status(401).json({ error: 'Not authenticated. Please sign in.' });
+  }
   const user = getUserById(userId);
   if (!user) {
-    return res.status(401).json({ error: 'Not authenticated.' });
+    return res.status(401).json({ error: 'User account not found.' });
   }
   return res.json({ user });
 });
@@ -300,6 +303,60 @@ export function parseInvoiceTextToDocument(rawText: string, fileName: string): I
         }
       }
     }
+    // Format C: Multi-space column separated (common in plain PDF text layouts)
+    else if (/\s{2,}/.test(l)) {
+      const parts = l.split(/\s{2,}/).map(p => p.trim()).filter(Boolean);
+      if (parts.length >= 4 && !/description|item|quantity|unit|amount|subtotal/i.test(parts[0])) {
+        const code = parts.length >= 5 ? parts[0] : '';
+        const desc = parts.length >= 5 ? parts[1] : parts[0];
+        const qty = parseFloat(parts.length >= 5 ? parts[2] : parts[1]);
+        const unit = parts.length >= 5 ? parts[3] : 'UNIT';
+        const price = parseFloat(parts.length >= 5 ? parts[4] : parts[2]);
+        const total = parts.length >= 6 ? parseFloat(parts[5]) : qty * price;
+
+        if (!isNaN(qty) && !isNaN(price) && price > 0) {
+          lineItems.push({
+            id: `li-${lineItems.length}`,
+            lineIndex: lineItems.length,
+            rawCode: code,
+            rawDescription: desc,
+            quantity: qty,
+            unit: unit.toUpperCase() || 'UNIT',
+            invoicedUnitPrice: price,
+            lineTotal: isNaN(total) ? qty * price : total,
+            sourceTextRef: l
+          });
+        }
+      }
+    }
+    // Format D: Key-value or narrative item format (e.g. "Item: Wagyu Beef, Qty: 4, Rate: $45.00")
+    else if (/qty|quantity/i.test(l) && /(?:price|rate|\$)/i.test(l)) {
+      const descMatch = l.match(/(?:item|product|desc)?\s*[:\-]?\s*([A-Za-z0-9\s/]+?)(?:,|qty|\$|\b[0-9])/i);
+      const qtyMatch = l.match(/(?:qty|quantity)\s*[:\-]?\s*([0-9]+(?:\.[0-9]+)?)/i);
+      const priceMatch = l.match(/(?:rate|price|unit\s*price)?\s*[:\$]?\s*([0-9]+\.[0-9]{2})/i);
+      const totalMatch = l.match(/(?:total|amount)\s*[:\$]?\s*([0-9]+\.[0-9]{2})/i);
+
+      if (priceMatch) {
+        const desc = descMatch ? descMatch[1].trim() : 'Unspecified Item';
+        const qty = qtyMatch ? parseFloat(qtyMatch[1]) : 1;
+        const price = parseFloat(priceMatch[1]);
+        const lineTotal = totalMatch ? parseFloat(totalMatch[1]) : qty * price;
+
+        if (!isNaN(qty) && !isNaN(price)) {
+          lineItems.push({
+            id: `li-${lineItems.length}`,
+            lineIndex: lineItems.length,
+            rawCode: '',
+            rawDescription: desc,
+            quantity: qty,
+            unit: 'UNIT',
+            invoicedUnitPrice: price,
+            lineTotal,
+            sourceTextRef: l
+          });
+        }
+      }
+    }
   }
 
   if (totalAmount === 0 && lineItems.length > 0) {
@@ -335,6 +392,8 @@ app.post('/api/extract/invoice', async (req, res) => {
 
     // If PDF fileData (base64) was provided, extract text with PDFParse
     const isPDF = (mimeType && mimeType.includes('pdf')) || (fileName && fileName.toLowerCase().endsWith('.pdf'));
+    let registeredFileId: string | null = null;
+
     if (fileData && isPDF) {
       try {
         const cleanBase64 = fileData.replace(/^data:[^;]+;base64,/, '');
@@ -343,10 +402,23 @@ app.post('/api/extract/invoice', async (req, res) => {
         await (parser as any).load();
         const pdfTextResult = await parser.getText();
         extractedText = pdfTextResult.text || '';
-        
+
+        // Check for scanned image documents (PDF with zero/minimal extractable text)
+        if (!extractedText || extractedText.trim().length < 25 || !/[a-zA-Z]{3,}/.test(extractedText)) {
+          return res.status(422).json({
+            success: false,
+            error: 'Document appears to be a scanned image with no embedded text layer. OCR processing is required.',
+            isScannedDocument: true,
+            ocrStatus: 'BLOCKED (GEMINI_API_KEY required for vision OCR)'
+          });
+        }
+
         // Securely register upload in private database-tracked storage
         const userId = getAuthenticatedUserId(req);
-        registerUploadedFile(userId, fileName || 'invoice.pdf', pdfBuffer, mimeType || 'application/pdf');
+        if (userId) {
+          const registered = registerUploadedFile(userId, fileName || 'invoice.pdf', pdfBuffer, mimeType || 'application/pdf');
+          registeredFileId = registered.fileId;
+        }
       } catch (pdfErr) {
         console.error('PDFParse extraction error:', pdfErr);
       }
@@ -418,7 +490,7 @@ app.post('/api/extract/invoice', async (req, res) => {
             })),
             extractionEngine: 'gemini_3.8_flash'
           };
-          return res.json({ success: true, invoice: doc, method: 'gemini' });
+          return res.json({ success: true, invoice: doc, fileId: registeredFileId, method: 'gemini' });
         }
       } catch (geminiErr: any) {
         console.warn('Gemini extraction unavailable or failed, using native parser:', geminiErr.message || geminiErr);
@@ -427,7 +499,7 @@ app.post('/api/extract/invoice', async (req, res) => {
 
     // Deterministic parser execution
     const invoiceDoc = parseInvoiceTextToDocument(extractedText, fileName || 'invoice.pdf');
-    return res.json({ success: true, invoice: invoiceDoc, method: 'native_pdf_parser' });
+    return res.json({ success: true, invoice: invoiceDoc, fileId: registeredFileId, method: 'native_pdf_parser' });
   } catch (err: any) {
     console.error('Invoice extraction route error:', err);
     return res.status(500).json({ error: 'Failed to extract invoice.' });
@@ -459,6 +531,8 @@ app.post('/api/extract/pricelist', (req, res) => {
         let name = `Product ${idx + 1}`;
         let unit = 'UNIT';
         let packSize = '';
+        let effectiveFrom = '2020-01-01';
+        let effectiveTo: string | undefined = undefined;
 
         for (const [key, val] of Object.entries(row)) {
           const k = key.toLowerCase();
@@ -475,6 +549,10 @@ app.post('/api/extract/pricelist', (req, res) => {
             unit = strVal.toUpperCase();
           } else if (/pack|size|case|packaging/i.test(k)) {
             packSize = strVal;
+          } else if (/effective.*from|start.*date|valid.*from/i.test(k)) {
+            effectiveFrom = strVal;
+          } else if (/effective.*to|end.*date|valid.*to|expires/i.test(k)) {
+            effectiveTo = strVal;
           }
         }
 
@@ -487,7 +565,8 @@ app.post('/api/extract/pricelist', (req, res) => {
             agreedPrice,
             unit,
             packSize,
-            effectiveFrom: new Date().toISOString().split('T')[0]
+            effectiveFrom,
+            effectiveTo
           });
         }
       });
@@ -511,6 +590,8 @@ app.post('/api/extract/pricelist', (req, res) => {
     let priceCol = -1;
     let unitCol = -1;
     let packCol = -1;
+    let effectiveFromCol = -1;
+    let effectiveToCol = -1;
 
     if (hasHeader) {
       const headerCols = lines[0].split(separator).map((c: string) => c.replace(/^["']|["']$/g, '').trim().toLowerCase());
@@ -520,6 +601,8 @@ app.post('/api/extract/pricelist', (req, res) => {
         else if (/price|rate|agreed|cost/i.test(h)) priceCol = idx;
         else if (/unit|uom/i.test(h)) unitCol = idx;
         else if (/pack|size|packaging/i.test(h)) packCol = idx;
+        else if (/effective.*from|start.*date|valid.*from/i.test(h)) effectiveFromCol = idx;
+        else if (/effective.*to|end.*date|valid.*to|expires/i.test(h)) effectiveToCol = idx;
       });
     }
 
@@ -535,6 +618,8 @@ app.post('/api/extract/pricelist', (req, res) => {
         let agreedPrice = 0;
         let unit = 'UNIT';
         let packSize = '';
+        let effectiveFrom = '2020-01-01';
+        let effectiveTo: string | undefined = undefined;
 
         if (priceCol !== -1 && cols[priceCol] !== undefined) {
           const cleanNum = cols[priceCol].replace(/[$,]/g, '').trim();
@@ -545,6 +630,8 @@ app.post('/api/extract/pricelist', (req, res) => {
             name = nameCol !== -1 ? cols[nameCol] : cols[0];
             unit = unitCol !== -1 && cols[unitCol] ? cols[unitCol] : 'UNIT';
             packSize = packCol !== -1 && cols[packCol] ? cols[packCol] : '';
+            if (effectiveFromCol !== -1 && cols[effectiveFromCol]) effectiveFrom = cols[effectiveFromCol];
+            if (effectiveToCol !== -1 && cols[effectiveToCol]) effectiveTo = cols[effectiveToCol];
           }
         } else {
           // Fallback: look for strictly numeric price column (e.g. 120.00, not '10 KG Box')
@@ -575,7 +662,8 @@ app.post('/api/extract/pricelist', (req, res) => {
             agreedPrice,
             unit: unit.toUpperCase() || 'UNIT',
             packSize,
-            effectiveFrom: new Date().toISOString().split('T')[0]
+            effectiveFrom,
+            effectiveTo
           });
         }
       }
@@ -593,8 +681,12 @@ app.post('/api/extract/pricelist', (req, res) => {
 // ==========================================
 app.post('/api/audit/run', (req, res) => {
   try {
-    const { priceList, invoices, title, supplierName, industry } = req.body;
     const userId = getAuthenticatedUserId(req);
+    if (!userId) {
+      return res.status(401).json({ error: 'Authentication required. Please sign in to run and save audits.' });
+    }
+
+    const { priceList, invoices, title, supplierName, industry, fileIds } = req.body;
 
     if (!Array.isArray(priceList) || priceList.length === 0) {
       return res.status(400).json({ error: 'Valid agreed price list is required.' });
@@ -620,6 +712,11 @@ app.post('/api/audit/run', (req, res) => {
 
     saveAuditSession(newAuditSession);
 
+    // Explicitly link uploaded private files to this audit session
+    if (Array.isArray(fileIds) && fileIds.length > 0) {
+      linkFilesToAudit(newAuditSession.id, userId, fileIds);
+    }
+
     return res.json({ success: true, audit: newAuditSession });
   } catch (err: any) {
     console.error('Audit execution error:', err);
@@ -629,6 +726,9 @@ app.post('/api/audit/run', (req, res) => {
 
 app.get('/api/audits', (req, res) => {
   const userId = getAuthenticatedUserId(req);
+  if (!userId) {
+    return res.status(401).json({ error: 'Authentication required. Please sign in.' });
+  }
   const userAudits = getAuditsForUser(userId);
   res.json({ audits: userAudits });
 });
@@ -636,9 +736,12 @@ app.get('/api/audits', (req, res) => {
 app.get('/api/audits/:id', (req, res) => {
   const { id } = req.params;
   const userId = getAuthenticatedUserId(req);
+  if (!userId) {
+    return res.status(401).json({ error: 'Authentication required. Please sign in.' });
+  }
   const audit = getAuditById(id, userId);
   if (!audit) {
-    return res.status(404).json({ error: 'Audit session not found.' });
+    return res.status(404).json({ error: 'Audit session not found or unauthorized.' });
   }
   return res.json({ audit });
 });
@@ -646,17 +749,26 @@ app.get('/api/audits/:id', (req, res) => {
 app.delete('/api/audits/:id', (req, res) => {
   const { id } = req.params;
   const userId = getAuthenticatedUserId(req);
+  if (!userId) {
+    return res.status(401).json({ error: 'Authentication required. Please sign in.' });
+  }
   const deleted = deleteAuditById(id, userId);
-  res.json({ success: deleted, message: deleted ? 'Audit session deleted.' : 'Audit not found or unauthorized.' });
+  if (!deleted) {
+    return res.status(404).json({ success: false, error: 'Audit not found, unauthorized, or read-only.' });
+  }
+  res.json({ success: true, message: 'Audit session and associated documents deleted.' });
 });
 
 app.get('/api/audits/:id/export.csv', (req, res) => {
   const { id } = req.params;
   const userId = getAuthenticatedUserId(req);
+  if (!userId) {
+    return res.status(401).send('Authentication required. Please sign in.');
+  }
   const audit = getAuditById(id, userId);
 
   if (!audit) {
-    return res.status(404).send('Audit session not found.');
+    return res.status(404).send('Audit session not found or unauthorized.');
   }
 
   const csvRows: string[] = [

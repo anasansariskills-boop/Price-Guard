@@ -310,6 +310,55 @@ export function runInvoiceAudit(
       const unitCompatible = areUnitsCompatible(item.unit, matchedProduct.unit) || Boolean(unitConversion);
       const unitDiff = Math.round((invoicedRate - agreedRate) * 100) / 100;
 
+      // Check Agreement Effective Date Range
+      const invDate = invoice.invoiceDate;
+      const effectiveFrom = matchedProduct.effectiveFrom;
+      const effectiveTo = matchedProduct.effectiveTo;
+      let isDateMismatched = false;
+      let dateMismatchReason = '';
+
+      if (invDate && effectiveFrom && invDate < effectiveFrom) {
+        isDateMismatched = true;
+        dateMismatchReason = `Invoice date (${invDate}) is prior to contract effective date (${effectiveFrom}).`;
+      } else if (invDate && effectiveTo && invDate > effectiveTo) {
+        isDateMismatched = true;
+        dateMismatchReason = `Invoice date (${invDate}) is after contract expiration date (${effectiveTo}).`;
+      }
+
+      if (isDateMismatched && Math.abs(unitDiff) > 0.01) {
+        needsReviewCount++;
+        const potOvercharge = Math.round(Math.max(0, unitDiff) * item.quantity * 100) / 100;
+        needsReviewTotalAmount += potOvercharge;
+
+        findings.push({
+          id: `date-${invoice.id}-${item.id}`,
+          invoiceId: invoice.id,
+          invoiceNumber: invoice.invoiceNumber,
+          supplierName: invoice.supplierName,
+          invoiceDate: invoice.invoiceDate,
+          lineIndex: item.lineIndex,
+          invoiceItem: item,
+          matchedAgreedProduct: matchedProduct,
+          matchConfidence,
+          matchMethod,
+          findingType: 'potential_mismatch',
+          agreedPrice: agreedRate,
+          invoicedPrice: invoicedRate,
+          unitPriceDiff: unitDiff,
+          quantity: item.quantity,
+          potentialOvercharge: 0, // Held at $0 until historical agreement date is confirmed
+          status: 'potential',
+          evidence: {
+            sourceDocument: `${invoice.sourceFileName} (Line ${item.lineIndex + 1})`,
+            sourceLineRef: `Invoice date: ${invDate} (Line: "${item.rawDescription}" @ $${invoicedRate.toFixed(2)})`,
+            agreedRecordRef: `Contract effective period: ${effectiveFrom || 'baseline'} to ${effectiveTo || 'open'}`,
+            calculationExplanation: `${dateMismatchReason} Overcharge held at $0.00 until applicable historical agreement is confirmed.`,
+            uncertaintyNotes: 'Verify whether a prior price agreement governed this purchase date.'
+          }
+        });
+        continue;
+      }
+
       // Pack size mismatch check (e.g. Case of 6 vs Case of 12, or unknown unit conversion)
       const packConflict = !unitCompatible || (
         item.packSize && matchedProduct.packSize &&
