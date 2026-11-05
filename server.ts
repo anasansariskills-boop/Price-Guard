@@ -806,7 +806,7 @@ app.get('/api/audits/:id/export.csv', (req, res) => {
 // ==========================================
 app.post('/api/leads', (req, res) => {
   try {
-    const { name, email, businessName, businessType, locationsCount, estimatedMonthlySpend, message } = req.body;
+    const { name, email, businessName, businessType, locationsCount, estimatedMonthlySpend, reviewMethod, message } = req.body;
 
     if (!name || !email || !businessName) {
       return res.status(400).json({ error: 'Name, email, and business name are required.' });
@@ -824,7 +824,10 @@ app.post('/api/leads', (req, res) => {
       businessType: businessType || 'Restaurant',
       locationsCount: locationsCount || '1',
       estimatedMonthlySpend: estimatedMonthlySpend || 'Not specified',
-      message: message ? message.trim() : ''
+      message: [
+        reviewMethod ? `Current Review Method: ${reviewMethod}` : '',
+        message ? message.trim() : ''
+      ].filter(Boolean).join('\n')
     });
 
     return res.status(201).json({

@@ -2,53 +2,94 @@ import React from 'react';
 
 export const ProblemSection: React.FC = () => {
   return (
-    <section className="py-20 border-b border-[#E1E3DD] bg-[#F8F7F3]">
+    <section id="problem" className="py-20 border-b border-[#E1E3DD] bg-white">
       <div className="max-w-7xl mx-auto px-6">
         <div className="max-w-3xl mb-14">
-          <h2 className="text-2xl sm:text-3xl font-bold tracking-tight text-[#202923] text-balance">
-            Your suppliers send the invoices. But who is checking the prices?
+          <div className="text-xs font-semibold uppercase tracking-wider text-[#BE825B] mb-2">
+            The Operational Reality
+          </div>
+          <h2 className="text-2xl sm:text-3xl lg:text-4xl font-bold tracking-tight text-[#202923] text-balance">
+            Your suppliers send the invoices. But who is checking every price?
           </h2>
-          <p className="mt-4 text-base text-[#202923]/80 leading-relaxed">
-            Every invoice contains dozens of prices, quantities, and product descriptions. Checking them against supplier agreements takes time, especially when you are managing several locations. Even small differences can go unnoticed when your team is busy keeping the business running.
+          <p className="mt-4 text-base sm:text-lg text-[#202923]/80 leading-relaxed">
+            Restaurant and hotel teams receive dozens of supplier invoices every week covering food, beverages, linen, cleaning materials, and guest amenities. A finance team verifies invoice totals and payment details, but checking every product line against the original agreement is too time-consuming during busy operations.
           </p>
         </div>
 
-        {/* Multi-Location Purchasing Complexity Visual */}
-        <div className="grid grid-cols-1 md:grid-cols-3 gap-6">
-          <div className="bg-white p-6 rounded-lg border border-[#E1E3DD]">
-            <div className="text-xs font-semibold text-[#BE825B] uppercase tracking-wider mb-2">
-              The Reality
+        {/* Operational Workflow Reality Comparison */}
+        <div className="border border-[#E1E3DD] rounded-lg bg-[#F8F7F3] p-6 sm:p-8 space-y-8">
+          <div className="grid grid-cols-1 md:grid-cols-4 gap-6 relative">
+            {/* Step 1: Negotiated Agreement */}
+            <div className="bg-white p-5 rounded-md border border-[#E1E3DD] space-y-3">
+              <div className="text-xs font-bold uppercase tracking-wider text-[#214B3D]">
+                01. The Agreement
+              </div>
+              <h3 className="text-sm font-semibold text-[#202923]">
+                Prices are negotiated and filed away
+              </h3>
+              <p className="text-xs text-[#202923]/70 leading-relaxed">
+                Management agrees on contracted rates for key ingredients, beverages, and operating supplies. The price schedule is saved in an email or spreadsheet.
+              </p>
+              <div className="pt-2 border-t border-[#E1E3DD] text-[11px] font-mono text-[#202923]/60">
+                Poultry Contract: $4.00/kg
+              </div>
             </div>
-            <h3 className="text-base font-semibold text-[#202923] mb-2">
-              Dozens of Line Items per Delivery
-            </h3>
-            <p className="text-sm text-[#202923]/70 leading-relaxed">
-              Food, beverage, housekeeping, and chemical suppliers invoice weekly. Individual prices fluctuate quietly, making line by line manual verification impractical during busy shifts.
-            </p>
+
+            {/* Step 2: Busy Operations */}
+            <div className="bg-white p-5 rounded-md border border-[#E1E3DD] space-y-3">
+              <div className="text-xs font-bold uppercase tracking-wider text-[#BE825B]">
+                02. The Busy Delivery
+              </div>
+              <h3 className="text-sm font-semibold text-[#202923]">
+                Kitchen checks boxes, not rates
+              </h3>
+              <p className="text-xs text-[#202923]/70 leading-relaxed">
+                Deliveries arrive during busy prep hours. Chefs and receiving staff check physical counts and freshness, then sign the delivery ticket and move on.
+              </p>
+              <div className="pt-2 border-t border-[#E1E3DD] text-[11px] font-mono text-[#202923]/60">
+                Received: 600 kg fresh boxes
+              </div>
+            </div>
+
+            {/* Step 3: Later Invoicing */}
+            <div className="bg-white p-5 rounded-md border border-[#E1E3DD] space-y-3">
+              <div className="text-xs font-bold uppercase tracking-wider text-[#A7443E]">
+                03. The Invoice Arrives
+              </div>
+              <h3 className="text-sm font-semibold text-[#202923]">
+                Prices shift quietly by small amounts
+              </h3>
+              <p className="text-xs text-[#202923]/70 leading-relaxed">
+                The supplier bills chicken at $4.50/kg instead of $4.00/kg. The total amount looks normal for a weekly food order, so the $0.50 difference passes unnoticed.
+              </p>
+              <div className="pt-2 border-t border-[#E1E3DD] text-[11px] font-mono text-[#A7443E]">
+                Billed: $4.50/kg ($300 diff)
+              </div>
+            </div>
+
+            {/* Step 4: Accounts Payable Approval */}
+            <div className="bg-white p-5 rounded-md border border-[#E1E3DD] space-y-3">
+              <div className="text-xs font-bold uppercase tracking-wider text-[#202923]/60">
+                04. Payment Issued
+              </div>
+              <h3 className="text-sm font-semibold text-[#202923]">
+                Totals balance, payment is approved
+              </h3>
+              <p className="text-xs text-[#202923]/70 leading-relaxed">
+                Accounts payable checks that the arithmetic is correct and the delivery was signed. Without an automatic check against the contract, the payment goes out.
+              </p>
+              <div className="pt-2 border-t border-[#E1E3DD] text-[11px] font-mono text-[#202923]/60">
+                Payment approved in full
+              </div>
+            </div>
           </div>
 
-          <div className="bg-white p-6 rounded-lg border border-[#E1E3DD]">
-            <div className="text-xs font-semibold text-[#BE825B] uppercase tracking-wider mb-2">
-              The Leakage
+          {/* Bottom Clarifying Summary */}
+          <div className="pt-4 border-t border-[#E1E3DD] flex flex-col sm:flex-row sm:items-center justify-between gap-4 text-xs text-[#202923]/80">
+            <div>
+              <strong className="text-[#202923] font-semibold">Not every discrepancy is intentional: </strong>
+              Authorized price changes, emergency substitutions, and temporary discounts happen constantly. The problem is having no visibility into which items need review.
             </div>
-            <h3 className="text-base font-semibold text-[#202923] mb-2">
-              Small Rates Accumulate Quickly
-            </h3>
-            <p className="text-sm text-[#202923]/70 leading-relaxed">
-              A $0.50 price creep on poultry or $3.00 on a case of cooking oil seems negligible on one delivery ticket. Multiplied across 52 weeks and multiple sites, it represents thousands in lost margin.
-            </p>
-          </div>
-
-          <div className="bg-white p-6 rounded-lg border border-[#E1E3DD]">
-            <div className="text-xs font-semibold text-[#BE825B] uppercase tracking-wider mb-2">
-              The Gap
-            </div>
-            <h3 className="text-base font-semibold text-[#202923] mb-2">
-              Agreements Locked in PDFs and Spreadsheets
-            </h3>
-            <p className="text-sm text-[#202923]/70 leading-relaxed">
-              Price agreements usually sit in procurement email attachments or spreadsheets while kitchen managers and general managers approve invoices based on receipt of goods, not contract price fidelity.
-            </p>
           </div>
         </div>
       </div>

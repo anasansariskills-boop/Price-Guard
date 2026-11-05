@@ -1,61 +1,84 @@
 import React from 'react';
 
 export const DetectionGrid: React.FC = () => {
-  const detections = [
+  const benefits = [
     {
-      title: 'Unexpected price increases',
-      desc: 'Flags when an invoiced unit price exceeds your contracted rate schedule, even when the product description differs slightly from your contract.',
-      example: 'Contract: $4.00/kg → Invoiced: $4.50/kg'
+      num: '01',
+      title: 'Spot pricing discrepancies',
+      desc: 'Identify potential differences between invoice prices and agreed supplier rates.',
+      detail: 'Flags line item unit rate variations across thousands of invoiced goods without needing to check every row manually.'
     },
     {
-      title: 'Possible duplicate charges',
-      desc: 'Detects duplicate invoice submissions, identical line totals, or repeated delivery charges entered across multiple weekly batches.',
-      example: 'Duplicate invoice number or double-billed delivery run'
+      num: '02',
+      title: 'Protect purchasing margins',
+      desc: 'Help prevent unnoticed supplier price differences from affecting business costs.',
+      detail: 'Catches gradual price creep on core food, beverage, and housekeeping items before they quietly erode kitchen or property margins.'
     },
     {
-      title: 'Incorrect pack sizes',
-      desc: 'Identifies when a vendor bills a single unit at a case price, or delivers an alternate pack configuration without updating unit rates.',
-      example: 'Single gallon billed at 4x1 Gal case rate'
+      num: '03',
+      title: 'Reduce repetitive checking',
+      desc: 'Help purchasing and finance teams focus on invoices that need attention.',
+      detail: 'Instead of inspecting invoices where prices matched perfectly, teams only spend time reviewing highlighted differences.'
     },
     {
-      title: 'Prices that differ between locations',
-      desc: 'Highlights when separate restaurant branches or hotel properties in your group are billed divergent rates for the exact same contracted SKU.',
-      example: 'Downtown charged $28.50/kg vs Westside charged $31.00/kg'
+      num: '04',
+      title: 'Understand supplier pricing',
+      desc: 'See which products, suppliers, and locations repeatedly generate discrepancies within available audit data.',
+      detail: 'Identify patterns across multiple properties or recurring delivery runs to prepare for quarterly vendor renegotiations.'
+    },
+    {
+      num: '05',
+      title: 'Resolve issues with evidence',
+      desc: 'Give teams the invoice details and agreed prices they need to request clarification or corrections.',
+      detail: 'Generate polite, factual dispute emails and calculation sheets containing exact contract clauses and invoice numbers.'
     }
   ];
 
   return (
-    <section id="what-it-finds" className="py-20 border-b border-[#E1E3DD] bg-[#F8F7F3]">
+    <section id="benefits" className="py-20 border-b border-[#E1E3DD] bg-white">
       <div className="max-w-7xl mx-auto px-6">
-        <div className="max-w-2xl mb-12">
+        <div className="max-w-3xl mb-14">
           <div className="text-xs font-semibold uppercase tracking-wider text-[#BE825B] mb-2">
-            Discrepancy Intelligence
+            Business Outcomes
           </div>
-          <h2 className="text-2xl sm:text-3xl font-bold tracking-tight text-[#202923] text-balance">
-            More than just an invoice scanner.
+          <h2 className="text-2xl sm:text-3xl lg:text-4xl font-bold tracking-tight text-[#202923] text-balance">
+            Better control of your supplier costs, without more manual work.
           </h2>
-          <p className="mt-3 text-base text-[#202923]/80 leading-relaxed">
-            PriceGuard checks for the specific pricing discrepancies that quietly erode margins in restaurant and hotel procurement.
+          <p className="mt-3 text-base sm:text-lg text-[#202923]/80 leading-relaxed">
+            PriceGuard is designed to deliver immediate clarity to hospitality finance and management teams without adding administrative burden.
           </p>
         </div>
 
-        <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
-          {detections.map((item) => (
+        {/* Thoughtful Editorial Outcome Layout */}
+        <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
+          {benefits.map((b, idx) => (
             <div
-              key={item.title}
-              className="bg-white p-7 rounded-lg border border-[#E1E3DD] flex flex-col justify-between space-y-4"
+              key={b.num}
+              className={`p-7 rounded-lg border border-[#E1E3DD] flex flex-col justify-between space-y-4 ${
+                idx === 0 ? 'bg-[#F2F5F0] border-[#214B3D]/30 lg:col-span-2' : 'bg-[#F8F7F3]'
+              }`}
             >
-              <div>
-                <h3 className="text-base font-semibold text-[#202923] mb-2">
-                  {item.title}
+              <div className="space-y-3">
+                <div className="flex items-center justify-between">
+                  <span className="font-mono text-xs font-bold text-[#214B3D]">
+                    {b.num}
+                  </span>
+                  <span className="text-[11px] font-semibold uppercase tracking-wider text-[#BE825B]">
+                    Outcome
+                  </span>
+                </div>
+
+                <h3 className="text-base sm:text-lg font-bold text-[#202923]">
+                  {b.title}
                 </h3>
-                <p className="text-sm text-[#202923]/75 leading-relaxed">
-                  {item.desc}
+
+                <p className="text-sm text-[#202923]/80 leading-relaxed font-medium">
+                  {b.desc}
                 </p>
               </div>
 
-              <div className="pt-3 border-t border-[#E1E3DD] text-xs font-mono text-[#214B3D] bg-[#F2F5F0] px-3 py-2 rounded-sm">
-                {item.example}
+              <div className="pt-3 border-t border-[#E1E3DD] text-xs text-[#202923]/60 leading-normal">
+                {b.detail}
               </div>
             </div>
           ))}

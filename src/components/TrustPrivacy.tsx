@@ -1,58 +1,65 @@
 import React from 'react';
 
 export const TrustPrivacy: React.FC = () => {
-  const securityGuarantees = [
+  const principles = [
     {
-      title: 'You choose what to upload',
-      desc: 'Audit individual invoices or whole supplier batches on demand. There is no requirement to upload historical years or unrelated company records.'
+      title: 'Every finding shows the source prices',
+      desc: 'Each identified variance displays both your agreed contract price and the exact billed invoice line, side by side.'
     },
     {
-      title: 'No banking credentials required',
-      desc: 'PriceGuard is an independent auditing tool. We never ask for your bank logins, credit card processing credentials, or accounting passwords.'
+      title: 'Review the exact calculation',
+      desc: 'You can inspect the arithmetic behind every finding: (Billed Price - Agreed Price) x Invoiced Quantity.'
     },
     {
-      title: 'No automatic payments or vendor emails',
-      desc: 'The platform never debits accounts or contacts suppliers automatically. You inspect every finding and decide whether to request a credit.'
+      title: 'Uncertain matches are marked for review',
+      desc: 'When product descriptions or pack configurations are ambiguous, PriceGuard flags them for human review rather than guessing.'
     },
     {
-      title: 'Evidence-backed calculations',
-      desc: 'We never present black-box numbers. Every flagged variance displays the exact invoice line, agreed contract clause, and mathematical formula.'
+      title: 'Differences are not automatically assumed to be overcharges',
+      desc: 'Price changes may be authorized, items substituted, or discounts applied. The platform helps you review differences, not jump to conclusions.'
     },
     {
-      title: 'Isolated data storage',
-      desc: 'Your audit records and price lists remain tied exclusively to your session or account. Documents are never exposed publicly or shared with competitors.'
+      title: 'PriceGuard never initiates payments',
+      desc: 'We are an audit and analysis tool. We never connect to banking rails, execute disbursements, or alter your accounting ledgers.'
     },
     {
-      title: 'Full deletion controls',
-      desc: 'You can delete your audits, uploaded invoices, and price lists permanently at any time directly from your workspace.'
+      title: 'No automatic vendor contact',
+      desc: 'We never contact your suppliers without your instruction. You decide when, how, and whether to request an invoice adjustment.'
+    },
+    {
+      title: 'Fictional public demonstration data',
+      desc: 'Our interactive demonstration uses entirely fictional suppliers and products, so you can explore the workflow freely with no account needed.'
     }
   ];
 
   return (
-    <section className="py-20 border-b border-[#E1E3DD] bg-[#F8F7F3]">
+    <section id="trust" className="py-20 border-b border-[#E1E3DD] bg-white">
       <div className="max-w-7xl mx-auto px-6">
-        <div className="max-w-2xl mb-12">
+        <div className="max-w-3xl mb-14">
           <div className="text-xs font-semibold uppercase tracking-wider text-[#BE825B] mb-2">
-            Data Governance & Trust
+            Transparency and Control
           </div>
-          <h2 className="text-2xl sm:text-3xl font-bold tracking-tight text-[#202923] text-balance">
-            Your invoices stay under your control.
+          <h2 className="text-2xl sm:text-3xl lg:text-4xl font-bold tracking-tight text-[#202923] text-balance">
+            Clear findings. Evidence you can check.
           </h2>
-          <p className="mt-3 text-base text-[#202923]/80 leading-relaxed">
-            Supplier agreements and invoices contain sensitive commercial terms. We designed PriceGuard with clear boundaries and respect for your operational privacy.
+          <p className="mt-3 text-base sm:text-lg text-[#202923]/80 leading-relaxed">
+            Procurement relationships require accuracy, diplomacy, and trust. PriceGuard provides objective mathematical comparisons so your management team remains in complete control.
           </p>
         </div>
 
+        {/* Clear Principles Grid */}
         <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
-          {securityGuarantees.map((item) => (
+          {principles.map((item, idx) => (
             <div
               key={item.title}
-              className="bg-white p-6 rounded-lg border border-[#E1E3DD] space-y-2"
+              className={`p-6 rounded-lg border border-[#E1E3DD] space-y-2.5 ${
+                idx === 0 ? 'bg-[#F2F5F0] border-[#214B3D]/30' : 'bg-[#F8F7F3]'
+              }`}
             >
               <h3 className="text-sm font-bold text-[#202923]">
                 {item.title}
               </h3>
-              <p className="text-xs text-[#202923]/70 leading-relaxed">
+              <p className="text-xs text-[#202923]/75 leading-relaxed">
                 {item.desc}
               </p>
             </div>

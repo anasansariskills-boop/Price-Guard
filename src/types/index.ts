@@ -115,6 +115,7 @@ export interface LeadSubmission {
   businessType: 'Restaurant' | 'Hotel' | 'Catering' | 'Hospitality Group' | 'Other';
   locationsCount: string;
   estimatedMonthlySpend?: string;
+  reviewMethod?: string;
   message?: string;
   createdAt?: string;
 }

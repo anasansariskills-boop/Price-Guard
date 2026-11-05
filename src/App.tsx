@@ -37,9 +37,15 @@ export function App() {
   };
 
   const handleScrollToSample = () => {
-    const el = document.getElementById('sample-audit');
-    if (el) {
-      el.scrollIntoView({ behavior: 'smooth' });
+    if (currentView !== 'landing') {
+      setCurrentView('landing');
+      setTimeout(() => {
+        const el = document.getElementById('sample-audit');
+        if (el) el.scrollIntoView({ behavior: 'smooth' });
+      }, 100);
+    } else {
+      const el = document.getElementById('sample-audit');
+      if (el) el.scrollIntoView({ behavior: 'smooth' });
     }
   };
 
@@ -55,7 +61,8 @@ export function App() {
         currentView={currentView}
         currentUser={currentUser}
         onNavigate={handleNavigate}
-        onRequestAudit={() => setIsPilotModalOpen(true)}
+        onSeeInAction={handleScrollToSample}
+        onRequestReview={() => setIsPilotModalOpen(true)}
         onOpenAuth={() => setIsAuthModalOpen(true)}
       />
 
@@ -65,43 +72,43 @@ export function App() {
           <>
             {/* Hero Section */}
             <HeroSection
-              onCheckInvoices={() => handleNavigate('dashboard')}
-              onExploreSample={handleScrollToSample}
+              onSeeInAction={handleScrollToSample}
+              onRequestReview={() => setIsPilotModalOpen(true)}
             />
 
-            {/* Problem Section */}
+            {/* Problem Section: Hospitality Purchasing Reality */}
             <ProblemSection />
 
-            {/* Cost Exposure Calculator */}
+            {/* Financial Impact: Cost Exposure Calculator */}
             <CostCalculator
-              onStartAudit={() => handleNavigate('new-audit')}
+              onRequestReview={() => setIsPilotModalOpen(true)}
+              onExploreDemo={handleScrollToSample}
             />
 
-            {/* Solution Workflow */}
+            {/* The Solution: 3 Understandable Stages */}
             <SolutionWorkflow />
 
-            {/* Interactive Sample Audit Demonstration */}
+            {/* The Centerpiece: Interactive Sample Audit Demonstration */}
             <InteractiveSampleAudit
-              onCheckOwnInvoices={() => handleNavigate('new-audit')}
+              onRequestReview={() => setIsPilotModalOpen(true)}
             />
 
-            {/* Detection Grid */}
+            {/* Business Benefits */}
             <DetectionGrid />
 
-            {/* Audience Split: Restaurants & Hotels */}
+            {/* Audience-Specific Messaging: Restaurants & Hotels */}
             <AudienceSplit />
 
-            {/* Trust and Privacy Section */}
+            {/* Trust and Transparency: Clear Findings & Evidence */}
             <TrustPrivacy />
 
-            {/* FAQ Section */}
+            {/* Frequently Asked Questions */}
             <FAQSection />
 
-            {/* Footer */}
+            {/* Final Conversion Section & Footer */}
             <Footer
-              onCheckInvoices={() => handleNavigate('dashboard')}
-              onExploreSample={handleScrollToSample}
-              onRequestAudit={() => setIsPilotModalOpen(true)}
+              onSeeInAction={handleScrollToSample}
+              onRequestReview={() => setIsPilotModalOpen(true)}
             />
           </>
         ) : (
@@ -116,13 +123,13 @@ export function App() {
         )}
       </main>
 
-      {/* Pilot Request / Free Sample Audit Modal */}
+      {/* Lead Capture Modal */}
       <PilotRequestModal
         isOpen={isPilotModalOpen}
         onClose={() => setIsPilotModalOpen(false)}
       />
 
-      {/* Real User Authentication Modal */}
+      {/* Optional Client Account Sign In Modal */}
       <AuthModal
         isOpen={isAuthModalOpen}
         onClose={() => setIsAuthModalOpen(false)}
@@ -132,17 +139,15 @@ export function App() {
         }}
       />
 
-      {/* Floating PriceGuard AI Assistant & Navigator */}
+      {/* Floating PriceGuard AI Assistant & In-App Guide */}
       <AIAssistantWidget
         currentView={currentView}
         onNavigate={handleNavigate}
         onOpenAuth={() => setIsAuthModalOpen(true)}
         onScrollToSample={handleScrollToSample}
         onScrollToCalculator={() => {
-          const el = document.getElementById('calculator');
-          if (el) {
-            el.scrollIntoView({ behavior: 'smooth' });
-          }
+          const el = document.getElementById('cost-calculator');
+          if (el) el.scrollIntoView({ behavior: 'smooth' });
         }}
       />
     </div>
