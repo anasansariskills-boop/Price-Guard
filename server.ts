@@ -848,8 +848,8 @@ app.post('/api/assistant/chat', async (req, res) => {
       return res.status(400).json({ error: 'Message is required.' });
     }
 
-    // Try Gemini AI first if configured
-    if (ai) {
+    // Try Gemini AI only if configured and verified available
+    if (ai && isGeminiAvailable) {
       try {
         const systemInstruction = `You are the friendly, intelligent in-app AI Assistant & Navigator for PriceGuard (Hospitality Supplier Invoice Auditing).
 Your main job is to guide users on where every option, feature, and workflow is located in the application, and explain how to use it.
@@ -910,7 +910,7 @@ Keep your guidance clear, scannable, and helpful with bullet points where approp
         });
 
         const timeoutPromise = new Promise((_, reject) =>
-          setTimeout(() => reject(new Error('AI Assistant timeout')), 2000)
+          setTimeout(() => reject(new Error('AI Assistant timeout')), 6000)
         );
 
         const geminiRes = await Promise.race([geminiPromise, timeoutPromise]) as any;
@@ -931,8 +931,8 @@ Keep your guidance clear, scannable, and helpful with bullet points where approp
             source: 'gemini'
           });
         }
-      } catch (geminiErr: any) {
-        console.warn('Gemini assistant call failed, using intelligent local guide:', geminiErr.message || geminiErr);
+      } catch {
+        // Fall back gracefully to local navigation guide without throwing errors
       }
     }
 
@@ -941,7 +941,10 @@ Keep your guidance clear, scannable, and helpful with bullet points where approp
     let reply = '';
     let action: { type: string; target: string } | null = null;
 
-    if (lower.includes('audit') && (lower.includes('kahan') || lower.includes('kaise') || lower.includes('start') || lower.includes('shuru') || lower.includes('new') || lower.includes('run'))) {
+    if (lower.includes('dashboard') || lower.includes('history') || lower.includes('result') || lower.includes('findings')) {
+      reply = `**Dashboard aur Audit History dekhne ke liye:**\n\n- Top Navbar mein **"Dashboard"** par click karein.\n- Wahan aapko:\n  1. **Audit Summary:** Verified Rate Overcharges, Duplicate Exposure, aur Total Spend ke cards dikhenge.\n  2. **Findings Table:** Har line item ki comparison, agreed rate, invoiced rate aur exact difference.\n  3. **Evidence Math:** Kisi bhi row par **"Evidence"** button dabane se calculation formula khul jayega.\n  4. **Export CSV / PDF:** Top right buttons se complete report download ho jati hai.`;
+      action = { type: 'NAVIGATE', target: 'dashboard' };
+    } else if (lower.includes('audit') && (lower.includes('kahan') || lower.includes('kaise') || lower.includes('start') || lower.includes('shuru') || lower.includes('new') || lower.includes('run'))) {
       reply = `**Naya Audit shuru karne ke liye:**\n\n1. **Top Navbar** mein **"New Audit"** par click karein (ya neeche diye gaye button par click karein).\n2. **Step 1 (Price List):** Apna agreed supplier catalog CSV/Excel format mein upload karein ya text paste karein.\n3. **Step 2 (Invoices):** Supplier ki PDF invoices upload karein.\n4. **Step 3 (Review & Run):** Extracted items check karke **"Run Deterministic Audit"** dabayein.\n\nAapko foran rate overcharges aur duplicate detection mil jayegi!`;
       action = { type: 'NAVIGATE', target: 'new-audit' };
     } else if (lower.includes('price list') || lower.includes('pricelist') || lower.includes('rate list') || lower.includes('catalog') || lower.includes('contract')) {
