@@ -8,8 +8,8 @@ dist/
 build/
 coverage/
 
-# Runtime SQLite Database and Sidecar WAL/SHM files
-data/
+# Runtime SQLite Database and Sidecar WAL/SHM files (root directory only)
+/data/
 *.db
 *.db-journal
 *.db-wal
@@ -17,9 +17,15 @@ data/
 *.sqlite
 *.sqlite3
 
-# Uploaded Customer Documents & Private Storage
-private_uploads/
-uploads/
+# Explicitly ensure frontend source code is never ignored
+!/src/data/
+!/src/data/**
+!/src/fixtures/
+!/src/fixtures/**
+
+# Uploaded Customer Documents & Private Storage (root directory only)
+/private_uploads/
+/uploads/
 /data/private_uploads/
 /data/uploads/
 

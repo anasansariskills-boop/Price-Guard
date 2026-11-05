@@ -1,5 +1,5 @@
 import React, { useState } from 'react';
-import { SAMPLE_RESTAURANT_AUDIT, SAMPLE_HOTEL_AUDIT } from '../data/sampleAudits';
+import { SAMPLE_RESTAURANT_AUDIT, SAMPLE_HOTEL_AUDIT } from '../fixtures/sampleAudits';
 import { DiscrepancyFinding } from '../types';
 import { generateSupplierEmailDraft } from '../utils/auditEngine';
 

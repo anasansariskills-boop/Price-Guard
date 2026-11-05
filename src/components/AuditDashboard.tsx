@@ -1,6 +1,6 @@
 import React, { useState, useEffect } from 'react';
 import { AuditSession, AgreedProduct, InvoiceDocument, DiscrepancyFinding, FindingStatus, UserAccount } from '../types/index.ts';
-import { SAMPLE_RESTAURANT_AUDIT, SAMPLE_HOTEL_AUDIT, RESTAURANT_PRICELIST, HOTEL_PRICELIST } from '../data/sampleAudits';
+import { SAMPLE_RESTAURANT_AUDIT, SAMPLE_HOTEL_AUDIT, RESTAURANT_PRICELIST, HOTEL_PRICELIST } from '../fixtures/sampleAudits';
 import { executeAudit, parsePriceList, extractInvoiceFromDocument, getSavedAudits, deleteAuditSession } from '../services/api';
 import { generateSupplierEmailDraft, recalculateAuditSummary } from '../utils/auditEngine.ts';
 
