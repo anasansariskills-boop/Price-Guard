@@ -1,5 +1,5 @@
 import React, { useState } from 'react';
-import { SAMPLE_RESTAURANT_AUDIT, SAMPLE_HOTEL_AUDIT, RESTAURANT_PRICELIST, HOTEL_PRICELIST } from '../fixtures/sampleAudits';
+import { SAMPLE_RESTAURANT_AUDIT, SAMPLE_HOTEL_AUDIT } from '../fixtures/sampleAudits';
 import { DiscrepancyFinding } from '../types';
 import { generateSupplierEmailDraft } from '../utils/auditEngine';
 
@@ -8,15 +8,26 @@ interface InteractiveSampleAuditProps {
 }
 
 export const InteractiveSampleAudit: React.FC<InteractiveSampleAuditProps> = ({ onRequestReview }) => {
-  const [selectedSample, setSelectedSample] = useState<'restaurant' | 'hotel'>('restaurant');
-  const [activeTab, setActiveTab] = useState<'findings' | 'contract' | 'invoices'>('findings');
-  const [findingFilter, setFindingFilter] = useState<'all' | 'overcharge' | 'duplicate' | 'review'>('all');
+  const [selectedIndustry, setSelectedIndustry] = useState<'restaurant' | 'hotel'>('restaurant');
+  const [currentFindingIndex, setCurrentFindingIndex] = useState<number>(0);
+  const [showFullTable, setShowFullTable] = useState<boolean>(false);
   const [activeEvidenceFinding, setActiveEvidenceFinding] = useState<DiscrepancyFinding | null>(null);
   const [activeEmailFinding, setActiveEmailFinding] = useState<DiscrepancyFinding | null>(null);
   const [copiedEmail, setCopiedEmail] = useState<boolean>(false);
 
-  const currentAudit = selectedSample === 'restaurant' ? SAMPLE_RESTAURANT_AUDIT : SAMPLE_HOTEL_AUDIT;
-  const currentPriceList = selectedSample === 'restaurant' ? RESTAURANT_PRICELIST : HOTEL_PRICELIST;
+  const currentAudit = selectedIndustry === 'restaurant' ? SAMPLE_RESTAURANT_AUDIT : SAMPLE_HOTEL_AUDIT;
+
+  // Filter to significant actionable discrepancies for the progressive walkthrough
+  const overchargeFindings = currentAudit.findings.filter(f => f.potentialOvercharge > 0 && f.findingType !== 'duplicate_invoice');
+  const activeFinding = overchargeFindings[currentFindingIndex] || currentAudit.findings[0];
+
+  const handleNextFinding = () => {
+    setCurrentFindingIndex((prev) => (prev + 1) % overchargeFindings.length);
+  };
+
+  const handlePrevFinding = () => {
+    setCurrentFindingIndex((prev) => (prev - 1 + overchargeFindings.length) % overchargeFindings.length);
+  };
 
   const handleCopyEmail = (body: string) => {
     navigator.clipboard.writeText(body);
@@ -46,342 +57,247 @@ export const InteractiveSampleAudit: React.FC<InteractiveSampleAuditProps> = ({ 
     const encodedUri = encodeURI(csvContent);
     const link = document.createElement('a');
     link.setAttribute('href', encodedUri);
-    link.setAttribute('download', `PriceGuard_Sample_Audit_${selectedSample}.csv`);
+    link.setAttribute('download', `PriceGuard_Sample_Audit_${selectedIndustry}.csv`);
     document.body.appendChild(link);
     link.click();
     document.body.removeChild(link);
   };
 
-  const filteredFindings = currentAudit.findings.filter(f => {
-    if (findingFilter === 'all') return true;
-    if (findingFilter === 'overcharge') return f.findingType === 'price_mismatch' || f.findingType === 'pack_size_discrepancy';
-    if (findingFilter === 'duplicate') return f.findingType === 'duplicate_invoice';
-    if (findingFilter === 'review') return f.findingType === 'potential_mismatch' || f.findingType === 'unmatched_product';
-    return true;
-  });
-
   return (
-    <section id="sample-audit" className="py-20 border-b border-[#E1E3DD] bg-[#F8F7F3]">
+    <section id="sample-audit" className="py-16 md:py-24 border-b border-[#E1E3DD] bg-white">
       <div className="max-w-7xl mx-auto px-6">
         {/* Section Header */}
-        <div className="flex flex-col md:flex-row md:items-end justify-between gap-6 mb-8">
+        <div className="flex flex-col md:flex-row md:items-end justify-between gap-6 mb-10 text-left">
           <div className="max-w-2xl">
             <div className="text-xs font-semibold uppercase tracking-wider text-[#BE825B] mb-2">
-              Interactive Product Demonstration
+              Interactive Demonstration
             </div>
             <h2 className="text-2xl sm:text-3xl lg:text-4xl font-bold tracking-tight text-[#202923] text-balance">
-              See what PriceGuard can find.
+              See what PriceGuard finds.
             </h2>
-            <p className="mt-2 text-sm sm:text-base text-[#202923]/80 leading-relaxed">
-              Explore a sample supplier invoice audit and see how pricing discrepancies become clear, actionable findings.
+            <p className="mt-2 text-base text-[#202923]/80">
+              Explore an audit result using progressive steps. All numbers use real deterministic calculations.
             </p>
           </div>
 
-          {/* Sample Switcher Tabs */}
-          <div className="flex items-center gap-1.5 p-1 bg-white rounded-md border border-[#E1E3DD] shadow-xs shrink-0">
+          {/* Industry Selector */}
+          <div className="flex items-center gap-1.5 p-1 bg-[#F8F7F3] rounded-md border border-[#E1E3DD] shadow-2xs self-start md:self-end">
             <button
               onClick={() => {
-                setSelectedSample('restaurant');
-                setFindingFilter('all');
+                setSelectedIndustry('restaurant');
+                setCurrentFindingIndex(0);
               }}
               className={`px-3 py-1.5 text-xs font-medium rounded-sm transition-colors cursor-pointer ${
-                selectedSample === 'restaurant'
-                  ? 'bg-[#214B3D] text-white font-semibold'
+                selectedIndustry === 'restaurant'
+                  ? 'bg-white text-[#214B3D] font-semibold shadow-xs'
                   : 'text-[#202923]/70 hover:text-[#202923]'
               }`}
             >
-              Restaurant Demo (F&B)
+              Restaurant example (F&B)
             </button>
             <button
               onClick={() => {
-                setSelectedSample('hotel');
-                setFindingFilter('all');
+                setSelectedIndustry('hotel');
+                setCurrentFindingIndex(0);
               }}
               className={`px-3 py-1.5 text-xs font-medium rounded-sm transition-colors cursor-pointer ${
-                selectedSample === 'hotel'
-                  ? 'bg-[#214B3D] text-white font-semibold'
+                selectedIndustry === 'hotel'
+                  ? 'bg-white text-[#214B3D] font-semibold shadow-xs'
                   : 'text-[#202923]/70 hover:text-[#202923]'
               }`}
             >
-              Hotel Demo (Linen & Supplies)
+              Hotel example (Linen & Supplies)
             </button>
           </div>
         </div>
 
-        {/* Guided Introduction Note */}
-        <div className="p-4 bg-white rounded-lg border border-[#E1E3DD] mb-6 flex flex-col sm:flex-row items-start sm:items-center justify-between gap-4 text-xs">
-          <div className="flex items-center gap-2.5">
-            <span className="w-5 h-5 rounded-full bg-[#E7EDE5] text-[#214B3D] font-bold flex items-center justify-center shrink-0">
-              i
-            </span>
-            <span className="text-[#202923]/80">
-              <strong className="text-[#202923] font-semibold">Let's check a supplier invoice: </strong>
-              Below is an actual audit generated by comparing real sample delivery bills against agreed price contracts.
-            </span>
-          </div>
-          <span className="text-[11px] text-[#BE825B] font-medium shrink-0">
-            Interactive demonstration using fictional sample data
+        {/* Reassuring Notice */}
+        <div className="text-xs text-[#202923]/60 mb-6 flex items-center justify-between">
+          <span>Interactive demonstration using fictional sample data.</span>
+          <span className="font-medium text-[#214B3D]">
+            We found {overchargeFindings.length} items worth reviewing
           </span>
         </div>
 
-        {/* Top Financial Metric Summary Cards */}
-        <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-4 mb-6">
-          <div className="p-5 bg-white rounded-lg border border-[#E1E3DD] shadow-xs">
-            <div className="text-[11px] font-semibold uppercase tracking-wider text-[#202923]/60 mb-1">
-              Total Invoiced Spend
-            </div>
-            <div className="font-mono tabular-nums text-2xl font-bold text-[#202923]">
-              ${currentAudit.summary.totalInvoiceAmount.toFixed(2)}
-            </div>
-            <div className="text-[11px] text-[#202923]/60 mt-1">
-              Across {currentAudit.invoices.length} supplier invoices
-            </div>
-          </div>
+        {/* Progressive Spotlight Card (The Core Finding) */}
+        {activeFinding && (
+          <div className="bg-[#F8F7F3] rounded-lg border border-[#E1E3DD] p-6 sm:p-8 shadow-xs text-left space-y-6">
+            <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-4 border-b border-[#E1E3DD] pb-4">
+              <div>
+                <span className="text-[11px] font-semibold uppercase tracking-wider text-[#BE825B] block mb-1">
+                  Discrepancy {currentFindingIndex + 1} of {overchargeFindings.length}
+                </span>
+                <h3 className="text-xl sm:text-2xl font-bold text-[#202923]">
+                  {activeFinding.invoiceItem.rawDescription}
+                </h3>
+                <div className="text-xs text-[#202923]/60 mt-0.5">
+                  Invoice #{activeFinding.invoiceNumber} · {activeFinding.supplierName}
+                </div>
+              </div>
 
-          <div className="p-5 bg-white rounded-lg border border-[#A7443E]/30 bg-[#FBF1F0]/40 shadow-xs">
-            <div className="text-[11px] font-semibold uppercase tracking-wider text-[#A7443E] mb-1">
-              Verified Rate Overcharges
+              <div className="text-left sm:text-right">
+                <div className="text-xs text-[#202923]/60 uppercase tracking-wider">Potential Difference</div>
+                <div className="text-2xl sm:text-3xl font-mono font-bold text-[#A7443E]">
+                  +${activeFinding.potentialOvercharge.toFixed(2)}
+                </div>
+              </div>
             </div>
-            <div className="font-mono tabular-nums text-2xl font-bold text-[#A7443E]">
-              ${(currentAudit.summary.potentialPriceOvercharge ?? currentAudit.summary.totalPotentialOvercharge).toFixed(2)}
-            </div>
-            <div className="text-[11px] text-[#202923]/60 mt-1">
-              Direct line item unit rate discrepancies
-            </div>
-          </div>
 
-          <div className="p-5 bg-white rounded-lg border border-[#BE825B]/30 bg-[#FAF4ED]/50 shadow-xs">
-            <div className="text-[11px] font-semibold uppercase tracking-wider text-[#BE825B] mb-1">
-              Possible Duplicate Exposure
-            </div>
-            <div className="font-mono tabular-nums text-2xl font-bold text-[#BE825B]">
-              ${currentAudit.summary.duplicateInvoiceExposure.toFixed(2)}
-            </div>
-            <div className="text-[11px] text-[#202923]/60 mt-1">
-              Separated from line item rate variances
-            </div>
-          </div>
+            {/* Document Comparison Row */}
+            <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
+              <div className="p-4 bg-white rounded-md border border-[#E1E3DD] space-y-2">
+                <div className="text-[11px] font-semibold text-[#202923]/60 uppercase tracking-wider">
+                  Agreed Price List
+                </div>
+                <div className="text-sm font-medium text-[#202923]">
+                  {activeFinding.matchedAgreedProduct?.name || 'Contract Item'}
+                </div>
+                <div className="pt-2 border-t border-[#E1E3DD] flex items-baseline justify-between text-xs">
+                  <span className="text-[#202923]/60">Contract rate:</span>
+                  <span className="font-mono font-semibold text-[#214B3D] text-sm">
+                    ${activeFinding.agreedPrice.toFixed(2)} / {activeFinding.invoiceItem.unit.toLowerCase()}
+                  </span>
+                </div>
+              </div>
 
-          <div className="p-5 bg-white rounded-lg border border-[#E1E3DD] shadow-xs">
-            <div className="text-[11px] font-semibold uppercase tracking-wider text-[#202923]/60 mb-1">
-              Items Requiring Review
+              <div className="p-4 bg-[#FBF1F0]/50 rounded-md border border-[#A7443E]/30 space-y-2">
+                <div className="text-[11px] font-semibold text-[#A7443E] uppercase tracking-wider">
+                  Supplier Invoice
+                </div>
+                <div className="text-sm font-medium text-[#202923]">
+                  Billed: {activeFinding.quantity} {activeFinding.invoiceItem.unit}
+                </div>
+                <div className="pt-2 border-t border-[#A7443E]/20 flex items-baseline justify-between text-xs">
+                  <span className="text-[#202923]/60">Charged rate:</span>
+                  <span className="font-mono font-bold text-[#A7443E] text-sm">
+                    ${activeFinding.invoicedPrice.toFixed(2)} / {activeFinding.invoiceItem.unit.toLowerCase()}
+                  </span>
+                </div>
+              </div>
             </div>
-            <div className="font-mono tabular-nums text-2xl font-bold text-[#202923]">
-              {currentAudit.summary.needsReviewCount}
+
+            {/* Difference Calculation Explanation */}
+            <div className="p-4 bg-white rounded-md border border-[#E1E3DD] flex flex-col sm:flex-row sm:items-center justify-between gap-3 text-xs">
+              <div className="text-[#202923]/80">
+                <strong>Calculation: </strong>
+                (${activeFinding.invoicedPrice.toFixed(2)} billed - ${activeFinding.agreedPrice.toFixed(2)} agreed) x {activeFinding.quantity} {activeFinding.invoiceItem.unit} = ${activeFinding.potentialOvercharge.toFixed(2)}
+              </div>
+              <span className="text-[11px] font-mono text-[#A7443E] font-semibold">
+                +${activeFinding.unitPriceDiff.toFixed(2)}/{activeFinding.invoiceItem.unit.toLowerCase()} discrepancy
+              </span>
             </div>
-            <div className="text-[11px] text-[#202923]/60 mt-1">
-              Unmatched items or pack changes
+
+            {/* Interactive Step Actions */}
+            <div className="pt-2 flex flex-wrap items-center justify-between gap-3">
+              <div className="flex items-center gap-2">
+                <button
+                  onClick={() => setActiveEvidenceFinding(activeFinding)}
+                  className="px-3 py-2 text-xs font-medium text-[#202923] bg-white hover:bg-[#E7EDE5] border border-[#E1E3DD] rounded-md transition-colors cursor-pointer shadow-2xs"
+                >
+                  View the Difference
+                </button>
+                <button
+                  onClick={() => setActiveEmailFinding(activeFinding)}
+                  className="px-3 py-2 text-xs font-medium text-[#214B3D] bg-white hover:bg-[#F2F5F0] border border-[#214B3D]/30 rounded-md transition-colors cursor-pointer shadow-2xs"
+                >
+                  Draft Supplier Email
+                </button>
+              </div>
+
+              <div className="flex items-center gap-2">
+                <button
+                  onClick={handlePrevFinding}
+                  className="px-3 py-2 text-xs font-medium text-[#202923] bg-white hover:bg-[#F2F5F0] border border-[#E1E3DD] rounded-md transition-colors cursor-pointer"
+                >
+                  Previous
+                </button>
+                <button
+                  onClick={handleNextFinding}
+                  className="px-4 py-2 text-xs font-semibold text-white bg-[#214B3D] hover:bg-[#1A3C31] rounded-md transition-colors cursor-pointer shadow-xs"
+                >
+                  Next Finding →
+                </button>
+              </div>
             </div>
           </div>
+        )}
+
+        {/* Optional Control to Expand All Findings */}
+        <div className="mt-6 flex items-center justify-between text-xs">
+          <button
+            onClick={() => setShowFullTable(!showFullTable)}
+            className="text-xs font-semibold text-[#214B3D] hover:underline cursor-pointer"
+          >
+            {showFullTable ? 'Hide detailed findings table' : `View all ${currentAudit.findings.length} findings`}
+          </button>
+
+          <button
+            onClick={handleDownloadSampleCsv}
+            className="text-xs text-[#202923]/70 hover:text-[#202923] underline cursor-pointer"
+          >
+            Download sample audit CSV
+          </button>
         </div>
 
-        {/* View Selection & Action Bar */}
-        <div className="bg-white rounded-t-lg border-t border-x border-[#E1E3DD] p-4 flex flex-col sm:flex-row items-start sm:items-center justify-between gap-4">
-          <div className="flex items-center gap-2">
-            <button
-              onClick={() => setActiveTab('findings')}
-              className={`px-3 py-1.5 text-xs font-semibold rounded-sm transition-colors cursor-pointer ${
-                activeTab === 'findings'
-                  ? 'bg-[#214B3D] text-white shadow-xs'
-                  : 'text-[#202923]/70 hover:text-[#202923] bg-[#F8F7F3]'
-              }`}
-            >
-              Audit Findings ({currentAudit.findings.length})
-            </button>
-            <button
-              onClick={() => setActiveTab('contract')}
-              className={`px-3 py-1.5 text-xs font-semibold rounded-sm transition-colors cursor-pointer ${
-                activeTab === 'contract'
-                  ? 'bg-[#214B3D] text-white shadow-xs'
-                  : 'text-[#202923]/70 hover:text-[#202923] bg-[#F8F7F3]'
-              }`}
-            >
-              Agreed Price Schedule ({currentPriceList.length})
-            </button>
-            <button
-              onClick={() => setActiveTab('invoices')}
-              className={`px-3 py-1.5 text-xs font-semibold rounded-sm transition-colors cursor-pointer ${
-                activeTab === 'invoices'
-                  ? 'bg-[#214B3D] text-white shadow-xs'
-                  : 'text-[#202923]/70 hover:text-[#202923] bg-[#F8F7F3]'
-              }`}
-            >
-              Supplier Invoices ({currentAudit.invoices.length})
-            </button>
-          </div>
-
-          <div className="flex items-center gap-2 w-full sm:w-auto justify-end">
-            <button
-              onClick={handleDownloadSampleCsv}
-              className="px-3 py-1.5 text-xs font-medium text-[#202923] bg-[#F8F7F3] hover:bg-[#E7EDE5] border border-[#E1E3DD] rounded-sm transition-colors cursor-pointer flex items-center gap-1.5"
-            >
-              <span>Download CSV</span>
-            </button>
-            <button
-              onClick={() => window.print()}
-              className="px-3 py-1.5 text-xs font-medium text-[#202923] bg-[#F8F7F3] hover:bg-[#E7EDE5] border border-[#E1E3DD] rounded-sm transition-colors cursor-pointer"
-            >
-              Print Report
-            </button>
-          </div>
-        </div>
-
-        {/* Tab 1: Findings Table */}
-        {activeTab === 'findings' && (
-          <div className="border border-[#E1E3DD] rounded-b-lg overflow-hidden bg-white shadow-xs">
-            {/* Filter Sub-bar */}
-            <div className="p-3 bg-[#F8F7F3] border-b border-[#E1E3DD] flex items-center gap-2 text-xs">
-              <span className="text-[#202923]/60 mr-1">Filter Findings:</span>
-              <button
-                onClick={() => setFindingFilter('all')}
-                className={`px-2.5 py-1 rounded-xs transition-colors cursor-pointer ${
-                  findingFilter === 'all'
-                    ? 'bg-[#214B3D] text-white font-medium'
-                    : 'text-[#202923]/70 hover:bg-white'
-                }`}
-              >
-                All ({currentAudit.findings.length})
-              </button>
-              <button
-                onClick={() => setFindingFilter('overcharge')}
-                className={`px-2.5 py-1 rounded-xs transition-colors cursor-pointer ${
-                  findingFilter === 'overcharge'
-                    ? 'bg-[#A7443E] text-white font-medium'
-                    : 'text-[#202923]/70 hover:bg-white'
-                }`}
-              >
-                Rate Overcharges
-              </button>
-              <button
-                onClick={() => setFindingFilter('duplicate')}
-                className={`px-2.5 py-1 rounded-xs transition-colors cursor-pointer ${
-                  findingFilter === 'duplicate'
-                    ? 'bg-[#BE825B] text-white font-medium'
-                    : 'text-[#202923]/70 hover:bg-white'
-                }`}
-              >
-                Duplicate Invoices
-              </button>
-              <button
-                onClick={() => setFindingFilter('review')}
-                className={`px-2.5 py-1 rounded-xs transition-colors cursor-pointer ${
-                  findingFilter === 'review'
-                    ? 'bg-[#214B3D] text-white font-medium'
-                    : 'text-[#202923]/70 hover:bg-white'
-                }`}
-              >
-                Needs Review
-              </button>
-            </div>
-
+        {/* Expanded Full Findings Table (Progressive Disclosure) */}
+        {showFullTable && (
+          <div className="mt-4 border border-[#E1E3DD] rounded-lg overflow-hidden bg-white shadow-xs">
             <div className="overflow-x-auto">
               <table className="w-full text-left text-xs border-collapse">
                 <thead>
                   <tr className="bg-[#F8F7F3] border-b border-[#E1E3DD] text-[#202923]/70 font-semibold">
-                    <th className="py-3 px-4">Invoice Line / Billed Item</th>
-                    <th className="py-3 px-4">Matched Contract Product</th>
-                    <th className="py-3 px-4 text-right">Agreed Rate</th>
-                    <th className="py-3 px-4 text-right">Billed Rate</th>
-                    <th className="py-3 px-4 text-right">Quantity</th>
-                    <th className="py-3 px-4 text-right">Unit Diff</th>
+                    <th className="py-3 px-4">Invoice Line</th>
+                    <th className="py-3 px-4">Contract Product</th>
+                    <th className="py-3 px-4 text-right">Agreed</th>
+                    <th className="py-3 px-4 text-right">Billed</th>
+                    <th className="py-3 px-4 text-right">Qty</th>
                     <th className="py-3 px-4 text-right">Discrepancy</th>
-                    <th className="py-3 px-4 text-center">Actions</th>
+                    <th className="py-3 px-4 text-center">Action</th>
                   </tr>
                 </thead>
                 <tbody className="divide-y divide-[#E1E3DD]">
-                  {filteredFindings.map((finding) => {
-                    const isOvercharge = finding.potentialOvercharge > 0 && finding.findingType !== 'duplicate_invoice';
-                    const isDuplicate = finding.findingType === 'duplicate_invoice';
-                    const isUncertain = finding.findingType === 'potential_mismatch' || finding.findingType === 'unmatched_product';
+                  {currentAudit.findings.map((f, idx) => {
+                    const isOver = f.potentialOvercharge > 0 && f.findingType !== 'duplicate_invoice';
+                    const isDup = f.findingType === 'duplicate_invoice';
 
                     return (
-                      <tr key={finding.id} className="hover:bg-[#F8F7F3]/60 transition-colors">
-                        {/* Invoiced Item */}
-                        <td className="py-3.5 px-4">
-                          <div className="font-semibold text-[#202923]">
-                            {finding.invoiceItem.rawDescription}
-                          </div>
-                          <div className="text-[11px] text-[#202923]/60 mt-0.5">
-                            Inv #{finding.invoiceNumber} · {finding.supplierName}
-                          </div>
+                      <tr key={f.id} className="hover:bg-[#F8F7F3]/50">
+                        <td className="py-3 px-4">
+                          <div className="font-semibold text-[#202923]">{f.invoiceItem.rawDescription}</div>
+                          <div className="text-[11px] text-[#202923]/60">Inv #{f.invoiceNumber}</div>
                         </td>
-
-                        {/* Matched Contract Item */}
-                        <td className="py-3.5 px-4">
-                          {finding.matchedAgreedProduct ? (
-                            <div>
-                              <div className="text-[#202923] font-medium">
-                                {finding.matchedAgreedProduct.name}
-                              </div>
-                              <div className="text-[11px] text-[#202923]/60 mt-0.5">
-                                SKU: {finding.matchedAgreedProduct.sku}
-                              </div>
-                            </div>
-                          ) : isDuplicate ? (
-                            <span className="text-[#BE825B] font-semibold">Duplicate Invoice Submission</span>
+                        <td className="py-3 px-4 text-[#202923]">
+                          {f.matchedAgreedProduct?.name || (isDup ? 'Duplicate Invoice' : 'Unmatched Item')}
+                        </td>
+                        <td className="py-3 px-4 text-right font-mono">
+                          {f.agreedPrice > 0 ? `$${f.agreedPrice.toFixed(2)}` : 'None'}
+                        </td>
+                        <td className="py-3 px-4 text-right font-mono font-semibold text-[#202923]">
+                          ${f.invoicedPrice.toFixed(2)}
+                        </td>
+                        <td className="py-3 px-4 text-right font-mono">
+                          {f.quantity} {f.invoiceItem.unit}
+                        </td>
+                        <td className="py-3 px-4 text-right font-mono font-bold">
+                          {isOver ? (
+                            <span className="text-[#A7443E]">+${f.potentialOvercharge.toFixed(2)}</span>
+                          ) : isDup ? (
+                            <span className="text-[#BE825B]">+${f.potentialOvercharge.toFixed(2)} (dup)</span>
                           ) : (
-                            <span className="text-[#202923]/60 italic">Unmatched (Requires Review)</span>
+                            <span className="text-[#202923]/60">$0.00</span>
                           )}
                         </td>
-
-                        {/* Agreed Rate */}
-                        <td className="py-3.5 px-4 text-right font-mono tabular-nums text-[#202923]">
-                          {finding.agreedPrice > 0 ? `$${finding.agreedPrice.toFixed(2)}` : 'None'}
-                        </td>
-
-                        {/* Billed Rate */}
-                        <td className="py-3.5 px-4 text-right font-mono tabular-nums font-semibold text-[#202923]">
-                          ${finding.invoicedPrice.toFixed(2)}
-                        </td>
-
-                        {/* Quantity */}
-                        <td className="py-3.5 px-4 text-right font-mono tabular-nums text-[#202923]">
-                          {finding.quantity} {finding.invoiceItem.unit}
-                        </td>
-
-                        {/* Unit Diff */}
-                        <td className="py-3.5 px-4 text-right font-mono tabular-nums">
-                          {finding.unitPriceDiff > 0 ? (
-                            <span className="text-[#A7443E] font-semibold">+${finding.unitPriceDiff.toFixed(2)}</span>
-                          ) : finding.unitPriceDiff === 0 ? (
-                            <span className="text-[#214B3D]">$0.00</span>
-                          ) : (
-                            <span className="text-[#202923]/60">${finding.unitPriceDiff.toFixed(2)}</span>
-                          )}
-                        </td>
-
-                        {/* Discrepancy Total */}
-                        <td className="py-3.5 px-4 text-right font-mono tabular-nums font-bold">
-                          {isOvercharge ? (
-                            <span className="text-[#A7443E]">+${finding.potentialOvercharge.toFixed(2)}</span>
-                          ) : isDuplicate ? (
-                            <span className="text-[#BE825B]">+${finding.potentialOvercharge.toFixed(2)} (dup)</span>
-                          ) : isUncertain ? (
-                            <span className="text-[#202923]/70 text-[11px] font-sans font-normal">Needs Review</span>
-                          ) : (
-                            <span className="text-[#214B3D]">$0.00</span>
-                          )}
-                        </td>
-
-                        {/* Action Buttons */}
-                        <td className="py-3.5 px-4 text-center">
-                          <div className="flex items-center justify-center gap-2">
-                            <button
-                              onClick={() => setActiveEvidenceFinding(finding)}
-                              className="px-2.5 py-1 text-[11px] font-medium text-[#202923] hover:text-[#214B3D] bg-[#F8F7F3] hover:bg-[#E7EDE5] border border-[#E1E3DD] rounded-sm transition-colors cursor-pointer"
-                            >
-                              Evidence
-                            </button>
-
-                            {isOvercharge && (
-                              <button
-                                onClick={() => setActiveEmailFinding(finding)}
-                                className="px-2.5 py-1 text-[11px] font-medium text-white bg-[#214B3D] hover:bg-[#1A3C31] rounded-sm transition-colors cursor-pointer"
-                              >
-                                Draft Email
-                              </button>
-                            )}
-                          </div>
+                        <td className="py-3 px-4 text-center">
+                          <button
+                            onClick={() => {
+                              const foundIdx = overchargeFindings.findIndex(item => item.id === f.id);
+                              if (foundIdx >= 0) setCurrentFindingIndex(foundIdx);
+                              setActiveEvidenceFinding(f);
+                            }}
+                            className="px-2 py-1 text-[11px] font-medium text-[#202923] bg-[#F8F7F3] hover:bg-[#E7EDE5] border border-[#E1E3DD] rounded-sm cursor-pointer"
+                          >
+                            Inspect
+                          </button>
                         </td>
                       </tr>
                     );
@@ -392,118 +308,34 @@ export const InteractiveSampleAudit: React.FC<InteractiveSampleAuditProps> = ({ 
           </div>
         )}
 
-        {/* Tab 2: Agreed Price Schedule */}
-        {activeTab === 'contract' && (
-          <div className="border border-[#E1E3DD] rounded-b-lg overflow-hidden bg-white shadow-xs p-6 space-y-4">
-            <div>
-              <h3 className="text-sm font-bold text-[#202923]">Agreed Supplier Price Schedule</h3>
-              <p className="text-xs text-[#202923]/70 mt-0.5">Reference prices negotiated by management for the current operating period.</p>
-            </div>
-
-            <div className="overflow-x-auto">
-              <table className="w-full text-left text-xs border-collapse">
-                <thead>
-                  <tr className="bg-[#F8F7F3] border-b border-[#E1E3DD] text-[#202923]/70 font-semibold">
-                    <th className="py-2.5 px-3">SKU</th>
-                    <th className="py-2.5 px-3">Product Name</th>
-                    <th className="py-2.5 px-3">Category</th>
-                    <th className="py-2.5 px-3">Pack Specification</th>
-                    <th className="py-2.5 px-3 text-right">Agreed Rate</th>
-                    <th className="py-2.5 px-3">Effective Dates</th>
-                  </tr>
-                </thead>
-                <tbody className="divide-y divide-[#E1E3DD]">
-                  {currentPriceList.map(p => (
-                    <tr key={p.id} className="hover:bg-[#F8F7F3]/50">
-                      <td className="py-2.5 px-3 font-mono font-medium text-[#202923]">{p.sku}</td>
-                      <td className="py-2.5 px-3 font-medium text-[#202923]">{p.name}</td>
-                      <td className="py-2.5 px-3 text-[#202923]/70">{p.category || 'General'}</td>
-                      <td className="py-2.5 px-3 text-[#202923]/70">{p.packSize || p.unit}</td>
-                      <td className="py-2.5 px-3 text-right font-mono tabular-nums font-semibold text-[#214B3D]">
-                        ${p.agreedPrice.toFixed(2)} / {p.unit.toLowerCase()}
-                      </td>
-                      <td className="py-2.5 px-3 text-[#202923]/60 text-[11px]">
-                        {p.effectiveFrom} to {p.effectiveTo}
-                      </td>
-                    </tr>
-                  ))}
-                </tbody>
-              </table>
-            </div>
-          </div>
-        )}
-
-        {/* Tab 3: Sample Invoices */}
-        {activeTab === 'invoices' && (
-          <div className="border border-[#E1E3DD] rounded-b-lg overflow-hidden bg-white shadow-xs p-6 space-y-6">
-            <div>
-              <h3 className="text-sm font-bold text-[#202923]">Incoming Supplier Invoices</h3>
-              <p className="text-xs text-[#202923]/70 mt-0.5">Itemized delivery tickets submitted by suppliers for payment approval.</p>
-            </div>
-
-            <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
-              {currentAudit.invoices.map((inv) => (
-                <div key={inv.id} className="p-5 rounded-md border border-[#E1E3DD] bg-[#F8F7F3] space-y-3">
-                  <div className="flex items-center justify-between border-b border-[#E1E3DD] pb-2 text-xs">
-                    <div>
-                      <span className="font-bold text-[#202923]">Invoice #{inv.invoiceNumber}</span>
-                      <div className="text-[11px] text-[#202923]/60">{inv.supplierName}</div>
-                    </div>
-                    <div className="text-right">
-                      <span className="font-mono tabular-nums font-bold text-[#202923]">
-                        ${inv.totalAmount.toFixed(2)}
-                      </span>
-                      <div className="text-[11px] text-[#202923]/60">Date: {inv.invoiceDate}</div>
-                    </div>
-                  </div>
-
-                  <div className="space-y-1.5 text-xs">
-                    {inv.lineItems.map((li) => (
-                      <div key={li.id} className="flex items-center justify-between py-1 border-b border-[#E1E3DD]/60">
-                        <span className="text-[#202923] truncate pr-2">{li.rawDescription}</span>
-                        <span className="font-mono tabular-nums text-[#202923]/80 shrink-0">
-                          {li.quantity} {li.unit} @ ${li.invoicedUnitPrice.toFixed(2)} = ${li.lineTotal.toFixed(2)}
-                        </span>
-                      </div>
-                    ))}
-                  </div>
-                </div>
-              ))}
-            </div>
-          </div>
-        )}
-
-        {/* Immediate Post-Demo Conversion Section */}
-        <div className="mt-12 p-8 bg-white rounded-lg border border-[#E1E3DD] shadow-xs flex flex-col sm:flex-row items-center justify-between gap-6">
-          <div className="space-y-1 text-center sm:text-left">
+        {/* Immediate Post-Demo Conversion Prompt */}
+        <div className="mt-12 p-6 sm:p-8 bg-[#F8F7F3] rounded-lg border border-[#E1E3DD] flex flex-col sm:flex-row items-center justify-between gap-6 text-left">
+          <div className="space-y-1">
             <h3 className="text-lg font-bold text-[#202923]">
-              Wonder what your own invoices might reveal?
+              Want to check your own supplier costs?
             </h3>
-            <p className="text-sm text-[#202923]/75 max-w-xl leading-relaxed">
-              See how PriceGuard could help your team review supplier pricing more efficiently. Request an introductory invoice audit for your business.
+            <p className="text-xs sm:text-sm text-[#202923]/70">
+              Send us 2 or 3 sample invoices alongside your agreed price list for a complimentary review.
             </p>
           </div>
           <button
             onClick={onRequestReview}
-            className="px-6 py-3.5 text-xs font-semibold text-white bg-[#214B3D] hover:bg-[#1A3C31] rounded-md transition-colors whitespace-nowrap cursor-pointer shadow-xs"
+            className="px-6 py-3 text-xs font-semibold text-white bg-[#214B3D] hover:bg-[#1A3C31] rounded-md transition-colors whitespace-nowrap cursor-pointer shadow-xs"
           >
-            Request Your Invoice Review
+            Request an Invoice Review
           </button>
         </div>
       </div>
 
-      {/* Evidence Calculation Modal */}
+      {/* Evidence Modal */}
       {activeEvidenceFinding && (
-        <div className="fixed inset-0 z-50 bg-black/40 flex items-center justify-center p-4">
-          <div className="bg-white max-w-lg w-full rounded-lg border border-[#E1E3DD] shadow-xl p-6 space-y-5">
+        <div className="fixed inset-0 z-50 bg-black/45 flex items-center justify-center p-4">
+          <div className="bg-white max-w-lg w-full rounded-lg border border-[#E1E3DD] shadow-xl p-6 space-y-4 text-left">
             <div className="flex items-center justify-between border-b border-[#E1E3DD] pb-3">
-              <div>
-                <h4 className="text-sm font-bold text-[#202923]">Mathematical Audit Evidence</h4>
-                <p className="text-[11px] text-[#202923]/60 mt-0.5">Every finding is supported by exact invoice and contract references</p>
-              </div>
+              <h4 className="text-sm font-bold text-[#202923]">Discrepancy Calculation & Evidence</h4>
               <button
                 onClick={() => setActiveEvidenceFinding(null)}
-                className="text-xs text-[#202923]/60 hover:text-[#202923] px-2 py-1 cursor-pointer"
+                className="text-xs text-[#202923]/60 hover:text-[#202923] p-1 cursor-pointer"
               >
                 Close
               </button>
@@ -511,38 +343,32 @@ export const InteractiveSampleAudit: React.FC<InteractiveSampleAuditProps> = ({ 
 
             <div className="space-y-3 text-xs">
               <div>
-                <span className="text-[#202923]/50 uppercase tracking-wider block text-[10px] mb-1">Source Document</span>
-                <div className="p-2.5 bg-[#F8F7F3] rounded-sm border border-[#E1E3DD] font-medium text-[#202923]">
+                <span className="text-[10px] uppercase tracking-wider text-[#202923]/50 block mb-1">Source Document</span>
+                <div className="p-2.5 bg-[#F8F7F3] rounded-sm border border-[#E1E3DD] text-[#202923]">
                   {activeEvidenceFinding.evidence.sourceDocument}
                 </div>
               </div>
 
               <div>
-                <span className="text-[#202923]/50 uppercase tracking-wider block text-[10px] mb-1">Invoiced Line Reference</span>
+                <span className="text-[10px] uppercase tracking-wider text-[#202923]/50 block mb-1">Invoiced Line Reference</span>
                 <div className="p-2.5 bg-[#F8F7F3] rounded-sm border border-[#E1E3DD] text-[#202923]">
                   {activeEvidenceFinding.evidence.sourceLineRef}
                 </div>
               </div>
 
               <div>
-                <span className="text-[#202923]/50 uppercase tracking-wider block text-[10px] mb-1">Contract Record Reference</span>
+                <span className="text-[10px] uppercase tracking-wider text-[#202923]/50 block mb-1">Contract Record Reference</span>
                 <div className="p-2.5 bg-[#F8F7F3] rounded-sm border border-[#E1E3DD] text-[#202923]">
                   {activeEvidenceFinding.evidence.agreedRecordRef}
                 </div>
               </div>
 
               <div>
-                <span className="text-[#202923]/50 uppercase tracking-wider block text-[10px] mb-1">Calculation Method</span>
+                <span className="text-[10px] uppercase tracking-wider text-[#202923]/50 block mb-1">Calculation Method</span>
                 <div className="p-2.5 bg-[#F2F5F0] rounded-sm border border-[#E1E3DD] text-[#214B3D] font-mono">
                   {activeEvidenceFinding.evidence.calculationExplanation}
                 </div>
               </div>
-
-              {activeEvidenceFinding.evidence.uncertaintyNotes && (
-                <div className="p-3 bg-[#FBF1F0] rounded-sm border border-[#A7443E]/20 text-[#A7443E]">
-                  <strong>Review Note:</strong> {activeEvidenceFinding.evidence.uncertaintyNotes}
-                </div>
-              )}
             </div>
 
             <div className="pt-2 flex justify-end">
@@ -550,7 +376,7 @@ export const InteractiveSampleAudit: React.FC<InteractiveSampleAuditProps> = ({ 
                 onClick={() => setActiveEvidenceFinding(null)}
                 className="px-4 py-2 text-xs font-semibold text-[#202923] bg-[#F8F7F3] hover:bg-[#E7EDE5] rounded-md transition-colors cursor-pointer"
               >
-                Close Evidence Window
+                Close Window
               </button>
             </div>
           </div>
@@ -559,16 +385,16 @@ export const InteractiveSampleAudit: React.FC<InteractiveSampleAuditProps> = ({ 
 
       {/* Supplier Correction Email Modal */}
       {activeEmailFinding && (
-        <div className="fixed inset-0 z-50 bg-black/40 flex items-center justify-center p-4">
-          <div className="bg-white max-w-xl w-full rounded-lg border border-[#E1E3DD] shadow-xl p-6 space-y-4">
+        <div className="fixed inset-0 z-50 bg-black/45 flex items-center justify-center p-4">
+          <div className="bg-white max-w-xl w-full rounded-lg border border-[#E1E3DD] shadow-xl p-6 space-y-4 text-left">
             <div className="flex items-center justify-between border-b border-[#E1E3DD] pb-3">
               <div>
                 <h4 className="text-sm font-bold text-[#202923]">Polite Supplier Correction Request</h4>
-                <p className="text-[11px] text-[#202923]/60 mt-0.5">Editable draft prepared for your accounts payable team</p>
+                <p className="text-[11px] text-[#202923]/60 mt-0.5">Factual draft prepared for your accounts payable team</p>
               </div>
               <button
                 onClick={() => setActiveEmailFinding(null)}
-                className="text-xs text-[#202923]/60 hover:text-[#202923] px-2 py-1 cursor-pointer"
+                className="text-xs text-[#202923]/60 hover:text-[#202923] p-1 cursor-pointer"
               >
                 Close
               </button>
@@ -591,7 +417,7 @@ export const InteractiveSampleAudit: React.FC<InteractiveSampleAuditProps> = ({ 
                     <label className="text-[10px] uppercase tracking-wider text-[#202923]/50 block mb-1">Email Body</label>
                     <textarea
                       readOnly
-                      rows={10}
+                      rows={9}
                       value={draft.body}
                       className="w-full p-3 bg-[#F8F7F3] border border-[#E1E3DD] rounded-sm text-[#202923] leading-relaxed resize-none font-mono text-[11px]"
                     />
@@ -599,7 +425,7 @@ export const InteractiveSampleAudit: React.FC<InteractiveSampleAuditProps> = ({ 
 
                   <div className="pt-2 flex items-center justify-between">
                     <span className="text-[11px] text-[#202923]/60">
-                      PriceGuard never contacts your suppliers automatically.
+                      PriceGuard does not contact suppliers automatically.
                     </span>
 
                     <button
