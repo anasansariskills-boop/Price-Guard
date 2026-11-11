@@ -1,11 +1,11 @@
 import React, { useState } from 'react';
 
 interface FooterProps {
-  onSeeInAction: () => void;
+  onTryDemo: () => void;
   onRequestReview: () => void;
 }
 
-export const Footer: React.FC<FooterProps> = ({ onSeeInAction, onRequestReview }) => {
+export const Footer: React.FC<FooterProps> = ({ onTryDemo, onRequestReview }) => {
   const [modalType, setModalType] = useState<'privacy' | 'terms' | null>(null);
 
   return (
@@ -20,21 +20,21 @@ export const Footer: React.FC<FooterProps> = ({ onSeeInAction, onRequestReview }
             You agreed on the price. Make sure you're billed for it.
           </h2>
           <p className="text-base text-[#E7EDE5]/80 leading-relaxed">
-            See how PriceGuard could help your restaurant or hotel keep supplier costs in check.
+            See how PriceGuard could help your hotel or restaurant review supplier pricing with greater confidence.
           </p>
 
           <div className="pt-2 flex flex-col sm:flex-row items-stretch sm:items-center gap-3.5">
             <button
-              onClick={onRequestReview}
+              onClick={onTryDemo}
               className="px-6 py-3.5 text-xs font-semibold text-[#202923] bg-white hover:bg-[#F8F7F3] rounded-md transition-colors text-center cursor-pointer shadow-xs"
             >
-              Request an Invoice Review
+              Try Live Demo
             </button>
             <button
-              onClick={onSeeInAction}
+              onClick={onRequestReview}
               className="px-6 py-3.5 text-xs font-medium text-white bg-transparent hover:bg-white/10 border border-white/20 rounded-md transition-colors text-center cursor-pointer"
             >
-              Explore the Demo
+              Request an Invoice Review
             </button>
           </div>
         </div>

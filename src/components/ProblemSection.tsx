@@ -49,10 +49,10 @@ export const ProblemSection: React.FC = () => {
             The Problem
           </div>
           <h2 className="text-2xl sm:text-3xl lg:text-4xl font-bold tracking-tight text-[#202923] text-balance">
-            Small mistakes. Real money.
+            Small pricing mistakes can add up.
           </h2>
           <p className="mt-3 text-base text-[#202923]/80 leading-relaxed">
-            Small pricing differences on weekly deliveries quietly accumulate across your suppliers and locations.
+            Small pricing differences on recurring deliveries quietly accumulate across your suppliers and locations.
           </p>
         </div>
 
@@ -120,7 +120,7 @@ export const ProblemSection: React.FC = () => {
                 ${totalDiscrepancy.toFixed(2)}
               </div>
               <p className="text-xs sm:text-sm text-[#E7EDE5]/80 leading-relaxed">
-                Found across just 3 delivery invoices. Multiply this across dozens of weekly shipments, and unnoticed differences become thousands in lost margin every year.
+                Found across just 3 delivery invoices. Over dozens of weekly shipments, unnoticed differences become thousands in lost margin every year.
               </p>
             </div>
 

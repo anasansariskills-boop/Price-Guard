@@ -2,10 +2,10 @@ import React, { useState } from 'react';
 import { UserAccount } from '../types/index.ts';
 
 interface NavbarProps {
-  currentView: 'landing' | 'dashboard' | 'new-audit';
+  currentView: 'landing' | 'demo' | 'dashboard' | 'new-audit';
   currentUser: UserAccount | null;
-  onNavigate: (view: 'landing' | 'dashboard' | 'new-audit') => void;
-  onSeeInAction: () => void;
+  onNavigate: (view: 'landing' | 'demo' | 'dashboard' | 'new-audit') => void;
+  onTryDemo: () => void;
   onRequestReview: () => void;
   onOpenAuth: () => void;
 }
@@ -14,7 +14,7 @@ export const Navbar: React.FC<NavbarProps> = ({
   currentView,
   currentUser,
   onNavigate,
-  onSeeInAction,
+  onTryDemo,
   onRequestReview,
   onOpenAuth
 }) => {
@@ -31,7 +31,7 @@ export const Navbar: React.FC<NavbarProps> = ({
           PriceGuard
         </button>
 
-        {/* Minimal Sales Navigation Links */}
+        {/* Sales Navigation Links */}
         {currentView === 'landing' ? (
           <nav className="hidden md:flex items-center gap-7 text-xs font-medium text-[#202923]/80">
             <a href="#problem" className="hover:text-[#214B3D] transition-colors whitespace-nowrap">
@@ -40,9 +40,15 @@ export const Navbar: React.FC<NavbarProps> = ({
             <a href="#how-it-works" className="hover:text-[#214B3D] transition-colors whitespace-nowrap">
               How It Works
             </a>
-            <a href="#sample-audit" className="hover:text-[#214B3D] transition-colors whitespace-nowrap font-semibold text-[#214B3D]">
-              Interactive Demo
+            <a href="#showcase" className="hover:text-[#214B3D] transition-colors whitespace-nowrap">
+              Showcase
             </a>
+            <button
+              onClick={onTryDemo}
+              className="hover:text-[#214B3D] transition-colors whitespace-nowrap font-semibold text-[#214B3D] cursor-pointer"
+            >
+              Interactive Demo
+            </button>
             <a href="#benefits" className="hover:text-[#214B3D] transition-colors whitespace-nowrap">
               Benefits
             </a>
@@ -58,8 +64,15 @@ export const Navbar: React.FC<NavbarProps> = ({
           </nav>
         )}
 
-        {/* Action Buttons */}
-        <div className="flex items-center gap-3 shrink-0">
+          {/* Action Buttons */}
+        <div className="flex items-center gap-2.5 shrink-0">
+          <button
+            onClick={onTryDemo}
+            className="hidden sm:inline-flex px-3.5 py-2 text-xs font-semibold text-[#214B3D] bg-white hover:bg-[#F2F5F0] border border-[#214B3D]/30 rounded-md transition-colors cursor-pointer shadow-2xs whitespace-nowrap"
+          >
+            Try Live Demo
+          </button>
+
           {currentUser && currentUser.id !== 'demo-user' ? (
             <button
               onClick={() => onNavigate('dashboard')}
@@ -117,12 +130,23 @@ export const Navbar: React.FC<NavbarProps> = ({
           </div>
           <div>
             <a
-              href="#sample-audit"
+              href="#showcase"
               onClick={() => setMobileMenuOpen(false)}
-              className="block py-1 font-semibold text-[#214B3D]"
+              className="block py-1 hover:text-[#214B3D]"
             >
-              Interactive Demo
+              Showcase
             </a>
+          </div>
+          <div>
+            <button
+              onClick={() => {
+                setMobileMenuOpen(false);
+                onTryDemo();
+              }}
+              className="block py-1 font-semibold text-[#214B3D] text-left w-full cursor-pointer"
+            >
+              Interactive Demo (Full Screen)
+            </button>
           </div>
           <div>
             <a

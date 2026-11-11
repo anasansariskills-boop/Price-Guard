@@ -3,48 +3,48 @@ import React from 'react';
 export const DetectionGrid: React.FC = () => {
   const benefits = [
     {
-      title: 'Find potential overcharges',
-      desc: 'Identify invoice prices that differ from agreed rates.',
+      title: 'Spot potential overcharges',
+      desc: 'Identify prices that differ from supplier agreements.',
       visual: (
-        <div className="p-3 bg-white rounded-md border border-[#E1E3DD] space-y-1.5 text-xs text-left">
+        <div className="p-3 bg-[#F8F7F3] rounded-md border border-[#E1E3DD] space-y-1.5 text-xs text-left">
           <div className="flex items-center justify-between">
             <span className="text-[#202923] font-medium">Billed Price</span>
             <span className="font-mono font-bold text-[#A7443E]">$4.50/kg</span>
           </div>
           <div className="flex items-center justify-between border-t border-[#E1E3DD] pt-1 text-[11px] text-[#202923]/70">
-            <span>Agreed Contract</span>
+            <span>Agreed Rate</span>
             <span className="font-mono text-[#214B3D]">$4.00/kg</span>
           </div>
         </div>
       )
     },
     {
-      title: 'Save time reviewing invoices',
-      desc: 'Focus attention on discrepancies instead of checking every line manually.',
+      title: 'Save time',
+      desc: 'Focus on invoices that need attention.',
       visual: (
-        <div className="p-3 bg-white rounded-md border border-[#E1E3DD] space-y-1.5 text-xs text-left">
+        <div className="p-3 bg-[#F8F7F3] rounded-md border border-[#E1E3DD] space-y-1.5 text-xs text-left">
           <div className="flex items-center justify-between">
             <span className="text-[#202923]">120 line items</span>
             <span className="text-[#214B3D] font-medium">117 matched</span>
           </div>
           <div className="flex items-center justify-between border-t border-[#E1E3DD] pt-1 text-[11px]">
             <span className="text-[#A7443E] font-semibold">3 need attention</span>
-            <span className="text-[#202923]/60">97% time saved</span>
+            <span className="text-[#202923]/60">97% manual time saved</span>
           </div>
         </div>
       )
     },
     {
       title: 'Resolve issues with evidence',
-      desc: 'See the invoice and agreed price side by side before contacting a supplier.',
+      desc: 'Review the supporting numbers before contacting suppliers.',
       visual: (
-        <div className="p-3 bg-white rounded-md border border-[#E1E3DD] space-y-1.5 text-xs text-left">
+        <div className="p-3 bg-[#F8F7F3] rounded-md border border-[#E1E3DD] space-y-1.5 text-xs text-left">
           <div className="flex items-center justify-between text-[11px]">
             <span className="text-[#202923] font-mono">Invoice #INV-8841</span>
             <span className="text-[#214B3D] font-mono">Schedule B</span>
           </div>
           <div className="border-t border-[#E1E3DD] pt-1 text-[11px] font-mono text-[#A7443E] font-semibold">
-            Calculation: ($4.50 - $4.00) x 600 = $300
+            Proof: ($4.50 - $4.00) x 600 = $300
           </div>
         </div>
       )
@@ -56,13 +56,13 @@ export const DetectionGrid: React.FC = () => {
       <div className="max-w-7xl mx-auto px-6">
         <div className="max-w-2xl mb-12 text-left">
           <div className="text-xs font-semibold uppercase tracking-wider text-[#BE825B] mb-2">
-            Business Outcomes
+            Business Benefits
           </div>
           <h2 className="text-2xl sm:text-3xl lg:text-4xl font-bold tracking-tight text-[#202923] text-balance">
-            Know where your money goes.
+            More control. Less manual checking.
           </h2>
           <p className="mt-2 text-base text-[#202923]/80">
-            Clear visibility into purchasing differences with zero guesswork.
+            Spend minutes reviewing flagged variances instead of hours checking rows by hand.
           </p>
         </div>
 

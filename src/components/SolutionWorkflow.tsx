@@ -7,8 +7,8 @@ export const SolutionWorkflow: React.FC = () => {
     {
       step: '01',
       title: 'Agreed supplier prices',
-      shortText: 'Your negotiated rates and catalog contracts.',
-      previewTitle: 'Contract Catalog Schedule',
+      shortText: 'Your negotiated contract rates and catalogs.',
+      previewTitle: 'Agreed Price Schedule',
       previewContent: [
         { label: 'POUL-001 Chicken Breast', value: '$4.00/kg' },
         { label: 'BEEF-105 Ground Chuck 80/20', value: '$6.20/kg' },
@@ -17,8 +17,8 @@ export const SolutionWorkflow: React.FC = () => {
     },
     {
       step: '02',
-      title: 'Supplier invoices',
-      shortText: 'The actual delivery bills sent by your vendors.',
+      title: 'Incoming supplier invoices',
+      shortText: 'The actual delivery bills sent by vendors.',
       previewTitle: 'Incoming Delivery Invoices',
       previewContent: [
         { label: 'Invoice #8841 (600 kg Chicken)', value: '$4.50/kg' },
@@ -28,7 +28,7 @@ export const SolutionWorkflow: React.FC = () => {
     },
     {
       step: '03',
-      title: 'Clear discrepancies and evidence',
+      title: 'Clear findings and evidence',
       shortText: 'Exact mathematical variances ready for review.',
       previewTitle: 'Audit Findings & Evidence',
       previewContent: [
@@ -44,7 +44,7 @@ export const SolutionWorkflow: React.FC = () => {
       <div className="max-w-7xl mx-auto px-6">
         <div className="max-w-2xl mb-12 text-left">
           <div className="text-xs font-semibold uppercase tracking-wider text-[#BE825B] mb-2">
-            The Process
+            How It Works
           </div>
           <h2 className="text-2xl sm:text-3xl lg:text-4xl font-bold tracking-tight text-[#202923] text-balance">
             From invoices to answers.

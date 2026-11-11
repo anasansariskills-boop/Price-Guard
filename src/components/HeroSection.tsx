@@ -1,11 +1,11 @@
 import React, { useState } from 'react';
 
 interface HeroSectionProps {
-  onSeeInAction: () => void;
+  onTryDemo: () => void;
   onRequestReview: () => void;
 }
 
-export const HeroSection: React.FC<HeroSectionProps> = ({ onSeeInAction, onRequestReview }) => {
+export const HeroSection: React.FC<HeroSectionProps> = ({ onTryDemo, onRequestReview }) => {
   const [selectedItem, setSelectedItem] = useState<'chicken' | 'oil'>('chicken');
 
   const items = {
@@ -18,8 +18,8 @@ export const HeroSection: React.FC<HeroSectionProps> = ({ onSeeInAction, onReque
       invoicedRate: 4.50,
       diff: 300.00,
       supplier: 'Artisan Meats & Poultry Co.',
-      contractRef: 'Master Agreement Schedule B',
-      invoiceRef: 'Invoice #INV-2026-8841'
+      contractRef: 'Master Supply Agreement Schedule B',
+      invoiceRef: 'Invoice #INV-2026-8841 (Line 1)'
     },
     oil: {
       name: 'Extra Virgin Olive Oil (4x5L)',
@@ -30,8 +30,8 @@ export const HeroSection: React.FC<HeroSectionProps> = ({ onSeeInAction, onReque
       invoicedRate: 84.00,
       diff: 240.00,
       supplier: 'Pacific Coast Pantry & Produce',
-      contractRef: 'Contract Schedule 2026',
-      invoiceRef: 'Invoice #INV-90422'
+      contractRef: 'Contract Price Schedule 2026',
+      invoiceRef: 'Invoice #INV-90422 (Line 1)'
     }
   };
 
@@ -48,15 +48,15 @@ export const HeroSection: React.FC<HeroSectionProps> = ({ onSeeInAction, onReque
             </h1>
 
             <p className="text-base sm:text-lg text-[#202923]/80 leading-relaxed max-w-xl">
-              Spot pricing differences between supplier invoices and agreed rates before they go unnoticed.
+              Spot differences between supplier invoices and agreed prices before they go unnoticed.
             </p>
 
             <div className="pt-2 flex flex-col sm:flex-row items-stretch sm:items-center gap-3.5">
               <button
-                onClick={onSeeInAction}
+                onClick={onTryDemo}
                 className="px-6 py-3.5 text-sm font-semibold text-white bg-[#214B3D] hover:bg-[#1A3C31] rounded-md transition-colors text-center shadow-xs cursor-pointer"
               >
-                See It in Action
+                Try Live Demo
               </button>
 
               <button
@@ -68,7 +68,7 @@ export const HeroSection: React.FC<HeroSectionProps> = ({ onSeeInAction, onReque
             </div>
 
             <div className="pt-1 text-xs text-[#202923]/60 flex items-center gap-2">
-              <span>Interactive demonstration using fictional sample data. No accounting integration required.</span>
+              <span>Interactive demonstration using fictional sample data. No registration or uploads required.</span>
             </div>
           </div>
 
@@ -78,7 +78,7 @@ export const HeroSection: React.FC<HeroSectionProps> = ({ onSeeInAction, onReque
               {/* Item Toggle */}
               <div className="flex items-center justify-between border-b border-[#E1E3DD] pb-3 text-xs">
                 <span className="font-semibold text-[#202923] uppercase tracking-wider text-[11px]">
-                  Live Document Comparison
+                  Document Comparison
                 </span>
                 <div className="flex items-center gap-1 bg-[#F8F7F3] p-1 rounded-md border border-[#E1E3DD]">
                   <button
@@ -109,7 +109,7 @@ export const HeroSection: React.FC<HeroSectionProps> = ({ onSeeInAction, onReque
                 {/* Agreed Price Schedule Document */}
                 <div className="p-4 rounded-md border border-[#E1E3DD] bg-[#F8F7F3]/70 space-y-2.5 text-left">
                   <div className="flex items-center justify-between text-[11px] text-[#202923]/60">
-                    <span className="font-semibold text-[#202923]">Agreed Price List</span>
+                    <span className="font-semibold text-[#202923]">Supplier Agreement</span>
                     <span className="font-mono">{current.code}</span>
                   </div>
 
