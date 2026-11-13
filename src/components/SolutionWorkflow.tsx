@@ -1,106 +1,114 @@
 import React, { useState } from 'react';
 
 export const SolutionWorkflow: React.FC = () => {
-  const [activeStep, setActiveStep] = useState<number>(0);
+  const [activeStage, setActiveStage] = useState<number>(2);
 
-  const steps = [
+  const stages = [
     {
-      step: '01',
-      title: 'Agreed supplier prices',
-      shortText: 'Your negotiated contract rates and catalogs.',
-      previewTitle: 'Agreed Price Schedule',
-      previewContent: [
-        { label: 'POUL-001 Chicken Breast', value: '$4.00/kg' },
-        { label: 'BEEF-105 Ground Chuck 80/20', value: '$6.20/kg' },
-        { label: 'OIL-012 Olive Oil 4x5L Case', value: '$72.00/case' }
+      num: '01.',
+      title: 'Agreed prices',
+      caption: 'Your supplier rates and pack sizes.',
+      fragmentTitle: 'Agreed price list',
+      rows: [
+        { label: 'Boneless Chicken Breast', value: '$4.00 / kg' },
+        { label: 'Extra Virgin Olive Oil (4x5L)', value: '$72.00 / case' },
+        { label: 'King Flat Sheet 300TC', value: '$16.50 / each' }
       ]
     },
     {
-      step: '02',
-      title: 'Incoming supplier invoices',
-      shortText: 'The actual delivery bills sent by vendors.',
-      previewTitle: 'Incoming Delivery Invoices',
-      previewContent: [
-        { label: 'Invoice #8841 (600 kg Chicken)', value: '$4.50/kg' },
-        { label: 'Invoice #8910 (100 kg Chuck)', value: '$6.50/kg' },
-        { label: 'Invoice #9042 (20 cases Oil)', value: '$84.00/case' }
+      num: '02.',
+      title: 'Supplier invoices',
+      caption: 'Weekly delivery bills as they arrive.',
+      fragmentTitle: 'Incoming invoices',
+      rows: [
+        { label: 'Artisan Meats · INV-8841', value: '$4.50 / kg' },
+        { label: 'Pacific Coast · INV-90422', value: '$84.00 / case' },
+        { label: 'LinenCraft · INV-4401 (Copy)', value: '$4,897.50' }
       ]
     },
     {
-      step: '03',
-      title: 'Clear findings and evidence',
-      shortText: 'Exact mathematical variances ready for review.',
-      previewTitle: 'Audit Findings & Evidence',
-      previewContent: [
-        { label: 'POUL-001 (+$0.50/kg diff)', value: '+$300.00 Overcharge' },
-        { label: 'BEEF-105 (+$0.30/kg diff)', value: '+$30.00 Overcharge' },
-        { label: 'OIL-012 (+$12.00/case diff)', value: '+$240.00 Overcharge' }
+      num: '03.',
+      title: 'Findings and evidence',
+      caption: 'Only the items worth investigating.',
+      fragmentTitle: 'Flagged for review',
+      rows: [
+        { label: 'Chicken Breast rate difference', value: '+$300.00' },
+        { label: 'Olive Oil case difference', value: '+$240.00' },
+        { label: 'LinenCraft #4401 duplicate risk', value: 'Flagged' }
       ]
     }
   ];
 
   return (
-    <section id="how-it-works" className="py-16 md:py-24 border-b border-[#E1E3DD] bg-[#F8F7F3]">
+    <section id="how-it-works" className="py-16 md:py-24 border-b border-[#E1E3DD] bg-white">
       <div className="max-w-7xl mx-auto px-6">
         <div className="max-w-2xl mb-12 text-left">
-          <div className="text-xs font-semibold uppercase tracking-wider text-[#BE825B] mb-2">
-            How It Works
+          <div className="text-xs font-medium text-[#BE825B] mb-2">
+            How PriceGuard Works
           </div>
           <h2 className="text-2xl sm:text-3xl lg:text-4xl font-bold tracking-tight text-[#202923] text-balance">
-            From invoices to answers.
+            PriceGuard reviews what your team would otherwise have to check manually.
           </h2>
-          <p className="mt-2 text-base text-[#202923]/80">
-            A simple three-stage workflow to catch price differences automatically.
+          <p className="mt-3 text-base text-[#202923]/80">
+            It compares supplier invoices against agreed prices and surfaces what deserves attention.
           </p>
         </div>
 
-        {/* Interactive 3-Stage Visual Document Workflow */}
-        <div className="grid grid-cols-1 md:grid-cols-3 gap-6">
-          {steps.map((s, idx) => {
-            const isActive = activeStep === idx;
+        {/* Connected 3-Stage Sequence */}
+        <div className="grid grid-cols-1 md:grid-cols-3 gap-6 relative">
+          {stages.map((stage, idx) => {
+            const isSelected = activeStage === idx;
             return (
-              <div
-                key={s.step}
-                onClick={() => setActiveStep(idx)}
-                className={`p-6 rounded-lg border transition-all cursor-pointer text-left flex flex-col justify-between space-y-5 bg-white ${
-                  isActive
-                    ? 'border-[#214B3D] shadow-xs ring-1 ring-[#214B3D]/10'
-                    : 'border-[#E1E3DD] hover:border-[#202923]/30'
-                }`}
-              >
-                <div className="space-y-3">
-                  <div className="flex items-center justify-between">
-                    <span className="font-mono text-xs font-bold text-[#214B3D]">
-                      STAGE {s.step}
-                    </span>
-                    <span className={`w-2 h-2 rounded-full ${isActive ? 'bg-[#214B3D]' : 'bg-[#E1E3DD]'}`} />
-                  </div>
-
-                  <h3 className="text-base font-bold text-[#202923]">
-                    {s.title}
-                  </h3>
-
-                  <p className="text-xs text-[#202923]/70 leading-relaxed">
-                    {s.shortText}
-                  </p>
-                </div>
-
-                {/* Mini Interface Simulation Box */}
-                <div className="p-3 bg-[#F8F7F3] rounded-md border border-[#E1E3DD] space-y-2 text-[11px]">
-                  <div className="text-[10px] font-semibold text-[#202923]/60 uppercase tracking-wider border-b border-[#E1E3DD] pb-1">
-                    {s.previewTitle}
-                  </div>
-                  {s.previewContent.map((row, rIdx) => (
-                    <div key={rIdx} className="flex items-center justify-between gap-2">
-                      <span className="text-[#202923]/80 truncate">{row.label}</span>
-                      <span className={`font-mono tabular-nums shrink-0 font-medium ${
-                        idx === 2 ? 'text-[#A7443E] font-bold' : 'text-[#202923]'
-                      }`}>
-                        {row.value}
+              <div key={stage.num} className="relative flex flex-col">
+                <button
+                  type="button"
+                  onClick={() => setActiveStage(idx)}
+                  className={`flex-1 p-6 rounded-xl border transition-colors text-left flex flex-col justify-between space-y-6 cursor-pointer ${
+                    isSelected
+                      ? 'border-[#214B3D] bg-[#F2F5F0]/60'
+                      : 'border-[#E1E3DD] bg-[#F8F7F3] hover:border-[#202923]/30'
+                  }`}
+                >
+                  <div className="space-y-1.5">
+                    <div className="flex items-center justify-between text-xs">
+                      <span className="font-mono font-bold text-[#214B3D]">
+                        {stage.num}
                       </span>
+                      {idx < 2 && (
+                        <span className="hidden md:inline-block text-xs text-[#202923]/35 font-mono">
+                          →
+                        </span>
+                      )}
                     </div>
-                  ))}
-                </div>
+                    <h3 className="text-lg font-bold text-[#202923]">
+                      {stage.title}
+                    </h3>
+                    <p className="text-xs text-[#202923]/75">
+                      {stage.caption}
+                    </p>
+                  </div>
+
+                  {/* Embedded Product Fragment */}
+                  <div className="p-3.5 bg-white rounded-md border border-[#E1E3DD] space-y-2.5 text-xs">
+                    <div className="text-[11px] font-medium text-[#202923]/60 border-b border-[#E1E3DD] pb-1.5">
+                      {stage.fragmentTitle}
+                    </div>
+                    <div className="space-y-2">
+                      {stage.rows.map((row) => (
+                        <div key={row.label} className="flex items-center justify-between gap-2">
+                          <span className="text-[#202923]/85 truncate">{row.label}</span>
+                          <span
+                            className={`font-mono tabular-nums shrink-0 font-semibold ${
+                              idx === 2 ? 'text-[#A7443E]' : 'text-[#202923]'
+                            }`}
+                          >
+                            {row.value}
+                          </span>
+                        </div>
+                      ))}
+                    </div>
+                  </div>
+                </button>
               </div>
             );
           })}

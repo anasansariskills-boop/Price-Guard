@@ -2,6 +2,7 @@ import React, { useState, useEffect } from 'react';
 import { Navbar } from './components/Navbar';
 import { HeroSection } from './components/HeroSection';
 import { ProblemSection } from './components/ProblemSection';
+import { WhyItMattersSection } from './components/WhyItMattersSection';
 import { SolutionWorkflow } from './components/SolutionWorkflow';
 import { ProductShowcase } from './components/ProductShowcase';
 import { InteractiveSampleAudit } from './components/InteractiveSampleAudit';
@@ -121,29 +122,33 @@ export function App() {
               onRequestReview={() => setIsPilotModalOpen(true)}
             />
 
-            {/* Section 2: The Problem (Small mistakes. Real money.) */}
+            {/* Section 2: The Problem */}
             <ProblemSection />
 
-            {/* Section 3: How PriceGuard Works (From invoices to answers.) */}
+            {/* Section 3: Why This Matters */}
+            <WhyItMattersSection />
+
+            {/* Section 4: How PriceGuard Works */}
             <SolutionWorkflow />
 
-            {/* Section 4: Product Showcase (See exactly where the numbers don't match.) */}
+            {/* Section 5: Product Showcase */}
             <ProductShowcase
               onExploreDemo={() => handleNavigate('demo')}
             />
 
-            {/* Section 5: Interactive Demo Walkthrough (See what PriceGuard finds.) */}
+            {/* Section 6: Live Demo Preview */}
             <InteractiveSampleAudit
-              onRequestReview={() => setIsPilotModalOpen(true)}
+              onOpenDemo={(industry) => handleNavigate('demo', industry)}
             />
 
-            {/* Section 6: Business Benefits (More control. Less manual checking.) */}
+            {/* Section 7: Business Benefits */}
             <DetectionGrid />
 
-            {/* Section 7: Final Conversion & Minimal Footer */}
+            {/* Section 8: Final CTA & Minimal Footer */}
             <Footer
               onTryDemo={() => handleNavigate('demo')}
               onRequestReview={() => setIsPilotModalOpen(true)}
+              onOpenAuth={() => setIsAuthModalOpen(true)}
             />
           </>
         ) : currentView === 'demo' ? (
@@ -155,7 +160,7 @@ export function App() {
             onIndustryChange={handleDemoIndustryChange}
           />
         ) : (
-          /* Enterprise / Authenticated Workspace */
+          /* Authenticated Workspace */
           <AuditDashboard
             initialMode={currentView}
             currentUser={currentUser}

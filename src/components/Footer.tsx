@@ -3,48 +3,53 @@ import React, { useState } from 'react';
 interface FooterProps {
   onTryDemo: () => void;
   onRequestReview: () => void;
+  onOpenAuth?: () => void;
 }
 
-export const Footer: React.FC<FooterProps> = ({ onTryDemo, onRequestReview }) => {
+export const Footer: React.FC<FooterProps> = ({ onTryDemo, onRequestReview, onOpenAuth }) => {
   const [modalType, setModalType] = useState<'privacy' | 'terms' | null>(null);
 
   return (
     <footer className="bg-[#202923] text-white">
-      {/* Final Conversion Section */}
+      {/* Section 8: Final CTA */}
       <div className="max-w-7xl mx-auto px-6 py-16 md:py-24 border-b border-white/10 text-left">
         <div className="max-w-2xl space-y-5">
-          <div className="text-xs font-semibold uppercase tracking-wider text-[#BE825B]">
-            Protect Purchasing Margins
+          <div className="text-xs font-medium text-[#BE825B]">
+            Supplier Invoice Auditing
           </div>
           <h2 className="text-3xl sm:text-4xl font-bold tracking-tight text-white text-balance leading-tight">
-            You agreed on the price. Make sure you're billed for it.
+            See what your own supplier invoices might reveal.
           </h2>
-          <p className="text-base text-[#E7EDE5]/80 leading-relaxed">
-            See how PriceGuard could help your hotel or restaurant review supplier pricing with greater confidence.
+          <p className="text-base text-[#E7EDE5]/85 leading-relaxed">
+            If you manage purchasing for a hotel or restaurant group, we can walk you through how PriceGuard could work for your business.
           </p>
 
           <div className="pt-2 flex flex-col sm:flex-row items-stretch sm:items-center gap-3.5">
             <button
-              onClick={onTryDemo}
-              className="px-6 py-3.5 text-xs font-semibold text-[#202923] bg-white hover:bg-[#F8F7F3] rounded-md transition-colors text-center cursor-pointer shadow-xs"
-            >
-              Try Live Demo
-            </button>
-            <button
               onClick={onRequestReview}
-              className="px-6 py-3.5 text-xs font-medium text-white bg-transparent hover:bg-white/10 border border-white/20 rounded-md transition-colors text-center cursor-pointer"
+              className="px-6 py-3.5 text-xs font-semibold text-[#202923] bg-white hover:bg-[#F8F7F3] rounded-md transition-colors text-center cursor-pointer shadow-xs"
             >
               Request an Invoice Review
             </button>
+            <button
+              onClick={onTryDemo}
+              className="px-6 py-3.5 text-xs font-medium text-white bg-transparent hover:bg-white/10 border border-white/25 rounded-md transition-colors text-center cursor-pointer"
+            >
+              Try Live Demo
+            </button>
           </div>
+
+          <p className="pt-1 text-xs text-[#E7EDE5]/65">
+            Built by GTEX · Demo uses fictional data · Personalized pilots and invoice reviews available on request
+          </p>
         </div>
       </div>
 
       {/* Minimal Footer */}
-      <div className="max-w-7xl mx-auto px-6 py-8 flex flex-col sm:flex-row items-start sm:items-center justify-between gap-4 text-xs text-[#E7EDE5]/60">
+      <div className="max-w-7xl mx-auto px-6 py-8 flex flex-col sm:flex-row items-start sm:items-center justify-between gap-4 text-xs text-[#E7EDE5]/65">
         <div className="flex items-center gap-2">
           <span className="font-bold text-white">PriceGuard</span>
-          <span>· Independent supplier invoice audit demonstration.</span>
+          <span>by GTEX · Supplier invoice auditing for hospitality.</span>
         </div>
 
         <div className="flex flex-wrap items-center gap-5">
@@ -60,13 +65,21 @@ export const Footer: React.FC<FooterProps> = ({ onTryDemo, onRequestReview }) =>
           >
             Terms of Demonstration
           </button>
+          {onOpenAuth && (
+            <button
+              onClick={onOpenAuth}
+              className="hover:text-white transition-colors cursor-pointer"
+            >
+              Client Login
+            </button>
+          )}
           <button
             onClick={onRequestReview}
             className="hover:text-white transition-colors cursor-pointer text-[#E7EDE5]"
           >
             Request Review
           </button>
-          <span>&copy; {new Date().getFullYear()} PriceGuard. All rights reserved.</span>
+          <span>&copy; {new Date().getFullYear()} GTEX. All rights reserved.</span>
         </div>
       </div>
 
@@ -90,7 +103,7 @@ export const Footer: React.FC<FooterProps> = ({ onTryDemo, onRequestReview }) =>
               {modalType === 'privacy' ? (
                 <>
                   <p>
-                    PriceGuard is committed to confidentiality. Information submitted through this website is used exclusively to contact you about your invoice review request.
+                    PriceGuard and GTEX are committed to confidentiality. Information submitted through this website is used exclusively to contact you about your invoice review request.
                   </p>
                   <p>
                     <strong>Data Privacy:</strong> We do not sell or share your contact information with suppliers, brokers, or competitors.
@@ -105,10 +118,10 @@ export const Footer: React.FC<FooterProps> = ({ onTryDemo, onRequestReview }) =>
                     PriceGuard demonstrates supplier invoice auditing methods for hospitality businesses.
                   </p>
                   <p>
-                    <strong>Independent Verification:</strong> Identified variances represent mathematical differences between reference prices and billed invoices for internal review.
+                    <strong>Independent Verification:</strong> Identified variances represent differences between reference price schedules and billed invoices for internal team review.
                   </p>
                   <p>
-                    <strong>No Banking Integration:</strong> PriceGuard does not execute payments or alter general ledgers.
+                    <strong>No Banking Integration:</strong> PriceGuard does not execute payments or alter accounting systems.
                   </p>
                 </>
               )}

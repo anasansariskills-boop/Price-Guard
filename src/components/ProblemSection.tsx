@@ -1,132 +1,165 @@
 import React, { useState } from 'react';
 
 export const ProblemSection: React.FC = () => {
-  const [activeInvoice, setActiveInvoice] = useState<number>(0);
+  const [viewMode, setViewMode] = useState<'surface' | 'revealed'>('revealed');
 
-  const sampleInvoices = [
+  const weeklyInvoices = [
     {
-      invoiceNum: 'INV-8841',
-      supplier: 'Artisan Meats Co.',
-      item: 'Ground Chuck 80/20 (100 KG)',
-      agreed: 6.20,
-      billed: 6.50,
-      qty: 100,
-      unit: 'KG',
-      diff: 30.00,
-      note: '+$0.30 per KG rate creep'
+      ref: 'INV-8841',
+      supplier: 'Artisan Meats & Poultry',
+      category: 'Kitchen & Protein · 18 lines',
+      total: '$4,620.00',
+      issueType: 'Price mismatch',
+      issueTone: 'text-[#A7443E]',
+      rowBg: 'bg-[#FBF1F0]/50 border-[#A7443E]/30',
+      hiddenIssue: 'Chicken breast charged at $4.50/kg instead of agreed $4.00/kg'
     },
     {
-      invoiceNum: 'INV-9042',
-      supplier: 'Pacific Harvest Seafood',
-      item: 'Atlantic Salmon Fillet (5 Cases)',
-      agreed: 120.00,
-      billed: 135.00,
-      qty: 5,
-      unit: 'CASE',
-      diff: 75.00,
-      note: '+$15.00 per Case variance'
+      ref: 'INV-4401 (Copy)',
+      supplier: 'LinenCraft Hospitality',
+      category: 'Housekeeping · 12 lines',
+      total: '$4,897.50',
+      issueType: 'Duplicate invoice',
+      issueTone: 'text-[#BE825B]',
+      rowBg: 'bg-[#FAF4ED]/60 border-[#BE825B]/30',
+      hiddenIssue: 'Same invoice number re-submitted two days after original delivery'
     },
     {
-      invoiceNum: 'INV-9118',
-      supplier: 'Coastal Pantry Supply',
-      item: 'Extra Virgin Olive Oil (10 Cases)',
-      agreed: 72.00,
-      billed: 84.00,
-      qty: 10,
-      unit: 'CASE',
-      diff: 120.00,
-      note: '+$12.00 per Case variance'
+      ref: 'INV-9912',
+      supplier: 'CleanStay Chemicals',
+      category: 'Facility Supplies · 9 lines',
+      total: '$1,032.00',
+      issueType: 'Pack size or unit mismatch',
+      issueTone: 'text-[#202923]',
+      rowBg: 'bg-[#F8F7F3] border-[#202923]/25',
+      hiddenIssue: 'Single 1-gallon bottle billed at the 4-gallon case price'
+    },
+    {
+      ref: 'INV-90422',
+      supplier: 'Pacific Coast Pantry',
+      category: 'Dry Goods & Oil · 24 lines',
+      total: '$2,944.00',
+      issueType: 'Item requiring review',
+      issueTone: 'text-[#202923]',
+      rowBg: 'bg-[#F8F7F3] border-[#202923]/25',
+      hiddenIssue: 'Product name changed on invoice and does not match catalog'
     }
   ];
-
-  const totalDiscrepancy = sampleInvoices.reduce((acc, curr) => acc + curr.diff, 0);
 
   return (
     <section id="problem" className="py-16 md:py-24 border-b border-[#E1E3DD] bg-white">
       <div className="max-w-7xl mx-auto px-6">
-        <div className="max-w-2xl mb-10 text-left">
-          <div className="text-xs font-semibold uppercase tracking-wider text-[#BE825B] mb-2">
-            The Problem
+        <div className="flex flex-col md:flex-row md:items-end justify-between gap-6 mb-10 text-left">
+          <div className="max-w-2xl">
+            <div className="text-xs font-medium text-[#BE825B] mb-2">
+              The Problem
+            </div>
+            <h2 className="text-2xl sm:text-3xl lg:text-4xl font-bold tracking-tight text-[#202923] text-balance">
+              When invoices pile up, small issues get missed.
+            </h2>
+            <p className="mt-3 text-base text-[#202923]/80 leading-relaxed">
+              Multiple suppliers, recurring deliveries, varied formats, and busy teams make line-by-line checking hard to sustain.
+            </p>
           </div>
-          <h2 className="text-2xl sm:text-3xl lg:text-4xl font-bold tracking-tight text-[#202923] text-balance">
-            Small pricing mistakes can add up.
-          </h2>
-          <p className="mt-3 text-base text-[#202923]/80 leading-relaxed">
-            Small pricing differences on recurring deliveries quietly accumulate across your suppliers and locations.
-          </p>
+
+          {/* Interactive Toggle: Total-Only Review vs Hidden Line Issues */}
+          <div className="inline-flex items-center gap-1 p-1 bg-[#F8F7F3] rounded-md border border-[#E1E3DD] self-start md:self-end shrink-0">
+            <button
+              type="button"
+              onClick={() => setViewMode('surface')}
+              className={`px-3 py-1.5 text-xs font-medium rounded-sm transition-colors cursor-pointer whitespace-nowrap ${
+                viewMode === 'surface'
+                  ? 'bg-white text-[#202923] font-semibold shadow-2xs'
+                  : 'text-[#202923]/65 hover:text-[#202923]'
+              }`}
+            >
+              Routine approval view
+            </button>
+            <button
+              type="button"
+              onClick={() => setViewMode('revealed')}
+              className={`px-3 py-1.5 text-xs font-medium rounded-sm transition-colors cursor-pointer whitespace-nowrap ${
+                viewMode === 'revealed'
+                  ? 'bg-[#214B3D] text-white font-semibold shadow-2xs'
+                  : 'text-[#202923]/65 hover:text-[#202923]'
+              }`}
+            >
+              What slips through
+            </button>
+          </div>
         </div>
 
-        {/* Visual Story: Individual Invoices Accumulating Into Real Money */}
-        <div className="grid grid-cols-1 lg:grid-cols-12 gap-6 items-stretch">
-          {/* Left: 3 Invoice Cards */}
-          <div className="lg:col-span-7 space-y-3">
-            {sampleInvoices.map((inv, idx) => {
-              const isSelected = activeInvoice === idx;
-              return (
-                <div
-                  key={inv.invoiceNum}
-                  onClick={() => setActiveInvoice(idx)}
-                  className={`p-4 sm:p-5 rounded-lg border transition-all cursor-pointer text-left ${
-                    isSelected
-                      ? 'border-[#214B3D] bg-[#F2F5F0] shadow-xs'
-                      : 'border-[#E1E3DD] bg-[#F8F7F3] hover:border-[#202923]/30'
-                  }`}
-                >
-                  <div className="flex items-center justify-between gap-4">
-                    <div className="space-y-1 min-w-0">
-                      <div className="flex items-center gap-2">
-                        <span className="font-mono text-xs font-bold text-[#202923]">
-                          {inv.invoiceNum}
-                        </span>
-                        <span className="text-xs text-[#202923]/60 truncate">
-                          · {inv.supplier}
-                        </span>
-                      </div>
-                      <div className="text-xs font-medium text-[#202923] truncate">
-                        {inv.item}
-                      </div>
-                    </div>
-
-                    <div className="text-right shrink-0">
-                      <div className="text-sm sm:text-base font-mono tabular-nums font-bold text-[#A7443E]">
-                        +${inv.diff.toFixed(2)}
-                      </div>
-                      <div className="text-[11px] text-[#202923]/60">
-                        {inv.note}
-                      </div>
-                    </div>
-                  </div>
-
-                  {isSelected && (
-                    <div className="mt-3 pt-3 border-t border-[#E1E3DD] text-[11px] text-[#202923]/70 flex items-center justify-between">
-                      <span>Agreed: ${inv.agreed.toFixed(2)} · Invoiced: ${inv.billed.toFixed(2)}</span>
-                      <span className="font-mono text-[#214B3D] font-semibold">
-                        (${inv.billed.toFixed(2)} - ${inv.agreed.toFixed(2)}) x {inv.qty} = ${inv.diff.toFixed(2)}
-                      </span>
-                    </div>
-                  )}
-                </div>
-              );
-            })}
+        {/* Visual Editorial Story */}
+        <div className="border border-[#E1E3DD] rounded-xl bg-[#F8F7F3] p-5 sm:p-8 space-y-6 text-left">
+          {/* Top Context Strip */}
+          <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-2 pb-4 border-b border-[#E1E3DD] text-xs">
+            <span className="font-semibold text-[#202923]">
+              {viewMode === 'surface'
+                ? 'At a glance, weekly supplier totals look routine.'
+                : 'Inside the line items, four distinct billing problems sit unnoticed.'}
+            </span>
+            <span className="text-[#202923]/60">
+              Sample weekly receiving across 4 suppliers
+            </span>
           </div>
 
-          {/* Right: Cumulative Impact Card */}
-          <div className="lg:col-span-5 bg-[#214B3D] text-white p-6 sm:p-8 rounded-lg shadow-xs flex flex-col justify-between text-left">
-            <div className="space-y-4">
-              <span className="text-xs font-semibold uppercase tracking-wider text-[#E7EDE5]/70 block">
-                Accumulated Discrepancy
-              </span>
-              <div className="text-4xl sm:text-5xl font-mono tabular-nums font-bold text-white">
-                ${totalDiscrepancy.toFixed(2)}
-              </div>
-              <p className="text-xs sm:text-sm text-[#E7EDE5]/80 leading-relaxed">
-                Found across just 3 delivery invoices. Over dozens of weekly shipments, unnoticed differences become thousands in lost margin every year.
-              </p>
-            </div>
+          {/* 4 Clean Rows Representing Weekly Invoices */}
+          <div className="space-y-3">
+            {weeklyInvoices.map((inv) => (
+              <div
+                key={inv.ref}
+                className={`p-4 sm:p-5 rounded-lg border transition-colors ${
+                  viewMode === 'revealed'
+                    ? inv.rowBg
+                    : 'bg-white border-[#E1E3DD]'
+                }`}
+              >
+                <div className="flex flex-col md:flex-row md:items-center justify-between gap-3">
+                  <div className="space-y-1 min-w-0">
+                    <div className="flex flex-wrap items-center gap-2 text-xs">
+                      <span className="font-bold text-[#202923]">{inv.supplier}</span>
+                      <span className="text-[#202923]/40">·</span>
+                      <span className="font-mono text-[#202923]/70">{inv.ref}</span>
+                      <span className="text-[#202923]/40">·</span>
+                      <span className="text-[#202923]/60">{inv.category}</span>
+                    </div>
 
-            <div className="pt-6 border-t border-white/15 text-xs text-[#E7EDE5]/70">
-              PriceGuard checks every line so your team does not have to.
-            </div>
+                    {viewMode === 'revealed' ? (
+                      <div className="flex flex-wrap items-center gap-2 text-xs pt-0.5">
+                        <span className={`font-semibold ${inv.issueTone}`}>
+                          {inv.issueType}:
+                        </span>
+                        <span className="text-[#202923]/80">
+                          {inv.hiddenIssue}
+                        </span>
+                      </div>
+                    ) : (
+                      <div className="text-xs text-[#202923]/55 pt-0.5">
+                        Invoice total checked against delivery slip. Line-item rates not cross-checked.
+                      </div>
+                    )}
+                  </div>
+
+                  <div className="flex md:flex-col items-center md:items-end justify-between gap-2 shrink-0">
+                    <span className="font-mono tabular-nums text-sm sm:text-base font-bold text-[#202923]">
+                      {inv.total}
+                    </span>
+                    <span className={`text-[11px] font-medium ${
+                      viewMode === 'revealed' ? inv.issueTone : 'text-[#214B3D]'
+                    }`}>
+                      {viewMode === 'revealed' ? 'Flagged for review' : 'Approved for payment'}
+                    </span>
+                  </div>
+                </div>
+              </div>
+            ))}
+          </div>
+
+          {/* Bottom Summary Line */}
+          <div className="pt-2 flex flex-col sm:flex-row sm:items-center justify-between gap-3 text-xs text-[#202923]/70">
+            <span>
+              Why manual checking breaks down: invoices arrive in different layouts, product names shift, and teams are stretched across daily operations.
+            </span>
           </div>
         </div>
       </div>

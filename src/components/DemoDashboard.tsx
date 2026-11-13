@@ -288,18 +288,18 @@ export const DemoDashboard: React.FC<DemoDashboardProps> = ({
       {/* Top Demo Header */}
       <header className="sticky top-0 z-40 bg-[#F8F7F3]/95 backdrop-blur-xs border-b border-[#E1E3DD]">
         <div className="max-w-7xl mx-auto px-6 h-18 flex items-center justify-between gap-4">
-          <div className="flex items-center gap-4">
+          <div className="flex items-center gap-3 shrink-0">
             <button
               onClick={onNavigateHome}
-              className="text-xl font-bold tracking-tight text-[#214B3D] hover:opacity-90 transition-opacity cursor-pointer whitespace-nowrap"
+              className="text-xl font-bold tracking-tight text-[#214B3D] hover:opacity-90 transition-opacity cursor-pointer whitespace-nowrap shrink-0"
             >
               PriceGuard
             </button>
-            <span className="hidden sm:inline-block text-xs font-medium text-[#202923]/40">
+            <span className="hidden sm:inline-block text-xs text-[#202923]/40">
               /
             </span>
-            <span className="hidden sm:inline-block text-xs font-semibold text-[#202923]/70 uppercase tracking-wider">
-              Interactive Product Demo
+            <span className="hidden sm:inline-block text-xs font-medium text-[#202923]/70 whitespace-nowrap">
+              Live Demo
             </span>
           </div>
 
@@ -356,18 +356,18 @@ export const DemoDashboard: React.FC<DemoDashboardProps> = ({
       {/* Main Container */}
       <main className="flex-1 max-w-7xl mx-auto px-6 py-8 w-full space-y-8 text-left">
         {/* Reassuring Subhead & Context Notice */}
-        <div className="flex flex-col md:flex-row md:items-center justify-between gap-4 p-4 rounded-lg bg-white border border-[#E1E3DD] shadow-2xs">
+        <div className="flex flex-col md:flex-row md:items-center justify-between gap-4 p-4 rounded-lg bg-white border border-[#E1E3DD]">
           <div>
-            <div className="flex items-center gap-2">
-              <span className="w-2 h-2 rounded-full bg-[#214B3D]" />
-              <span className="text-xs font-semibold uppercase tracking-wider text-[#214B3D]">
-                Interactive Audit Workspace
+            <div className="flex flex-wrap items-center gap-2 text-xs">
+              <span className="font-semibold text-[#214B3D]">
+                Findings worth reviewing
               </span>
-              <span className="text-xs text-[#202923]/50">
-                · {selectedIndustry === 'restaurant' ? 'The Brass Palm Group (3 Locations)' : 'The Grandview Hotel & Suites (140 Rooms)'}
+              <span className="text-[#202923]/40">·</span>
+              <span className="text-[#202923]/70 font-medium">
+                {selectedIndustry === 'restaurant' ? 'The Brass Palm Group (3 Locations)' : 'The Grandview Hotel & Suites (140 Rooms)'}
               </span>
             </div>
-            <p className="mt-1 text-xs text-[#202923]/75">
+            <p className="mt-1 text-xs text-[#202923]/70">
               Interactive demonstration using fictional data. No registration, login, or document uploads required.
             </p>
           </div>
@@ -375,13 +375,13 @@ export const DemoDashboard: React.FC<DemoDashboardProps> = ({
           <div className="flex items-center gap-2 shrink-0">
             <button
               onClick={handleExportCsv}
-              className="px-3 py-1.5 text-xs font-medium text-[#202923] bg-[#F8F7F3] hover:bg-[#E7EDE5] border border-[#E1E3DD] rounded-md transition-colors cursor-pointer"
+              className="px-3 py-1.5 text-xs font-medium text-[#202923] bg-[#F8F7F3] hover:bg-[#E7EDE5] border border-[#E1E3DD] rounded-md transition-colors cursor-pointer whitespace-nowrap"
             >
               Export CSV Report
             </button>
             <button
               onClick={() => window.print()}
-              className="px-3 py-1.5 text-xs font-medium text-[#202923] bg-[#F8F7F3] hover:bg-[#E7EDE5] border border-[#E1E3DD] rounded-md transition-colors cursor-pointer"
+              className="px-3 py-1.5 text-xs font-medium text-[#202923] bg-[#F8F7F3] hover:bg-[#E7EDE5] border border-[#E1E3DD] rounded-md transition-colors cursor-pointer whitespace-nowrap"
             >
               Print Summary
             </button>
@@ -404,11 +404,11 @@ export const DemoDashboard: React.FC<DemoDashboardProps> = ({
         {/* Financial Metrics Cards (Strict Category Separation) */}
         <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-4">
           {/* Card 1: Total Invoiced */}
-          <div className="p-5 bg-white rounded-lg border border-[#E1E3DD] shadow-2xs space-y-1">
-            <div className="text-[11px] font-semibold uppercase tracking-wider text-[#202923]/60">
-              Total Invoiced Amount
+          <div className="p-5 bg-white rounded-lg border border-[#E1E3DD] space-y-1">
+            <div className="text-xs font-medium text-[#202923]/65">
+              Total invoiced
             </div>
-            <div className="text-2xl sm:text-3xl font-mono font-bold text-[#202923]">
+            <div className="text-2xl sm:text-3xl font-mono tabular-nums font-bold text-[#202923]">
               ${summary.totalInvoiceAmount.toFixed(2)}
             </div>
             <div className="text-[11px] text-[#202923]/60">
@@ -416,44 +416,42 @@ export const DemoDashboard: React.FC<DemoDashboardProps> = ({
             </div>
           </div>
 
-          {/* Card 2: Verified Rate Overcharges */}
-          <div className="p-5 bg-white rounded-lg border border-[#A7443E]/30 bg-[#FBF1F0]/40 shadow-2xs space-y-1">
-            <div className="text-[11px] font-semibold uppercase tracking-wider text-[#A7443E] flex items-center justify-between">
-              <span>Potential Rate Overcharges</span>
-              <span className="text-[10px] px-1.5 py-0.5 bg-[#A7443E]/10 rounded-xs">Verified</span>
+          {/* Card 2: Potential Pricing Differences */}
+          <div className="p-5 bg-[#FBF1F0]/40 rounded-lg border border-[#A7443E]/30 space-y-1">
+            <div className="text-xs font-semibold text-[#A7443E]">
+              Potential pricing differences
             </div>
-            <div className="text-2xl sm:text-3xl font-mono font-bold text-[#A7443E]">
+            <div className="text-2xl sm:text-3xl font-mono tabular-nums font-bold text-[#A7443E]">
               ${summary.potentialPriceOvercharge.toFixed(2)}
             </div>
-            <div className="text-[11px] text-[#202923]/60">
-              {summary.discrepancyCount} verified unit price discrepancies
+            <div className="text-[11px] text-[#202923]/65">
+              {summary.discrepancyCount} pricing mismatches found
             </div>
           </div>
 
-          {/* Card 3: Duplicate Invoice Exposure (Separated) */}
-          <div className="p-5 bg-white rounded-lg border border-[#BE825B]/30 bg-[#FAF4ED]/50 shadow-2xs space-y-1">
-            <div className="text-[11px] font-semibold uppercase tracking-wider text-[#BE825B] flex items-center justify-between">
-              <span>Duplicate Invoice Exposure</span>
-              <span className="text-[10px] px-1.5 py-0.5 bg-[#BE825B]/15 rounded-xs">Separated</span>
+          {/* Card 3: Possible Duplicate Billing (Separated) */}
+          <div className="p-5 bg-[#FAF4ED]/50 rounded-lg border border-[#BE825B]/30 space-y-1">
+            <div className="text-xs font-semibold text-[#BE825B]">
+              Possible duplicate billing
             </div>
-            <div className="text-2xl sm:text-3xl font-mono font-bold text-[#BE825B]">
+            <div className="text-2xl sm:text-3xl font-mono tabular-nums font-bold text-[#BE825B]">
               ${summary.duplicateInvoiceExposure.toFixed(2)}
             </div>
-            <div className="text-[11px] text-[#202923]/60">
-              {summary.duplicateInvoiceCount} duplicate invoice submissions
+            <div className="text-[11px] text-[#202923]/65">
+              {summary.duplicateInvoiceCount} duplicate submission · Kept separate
             </div>
           </div>
 
-          {/* Card 4: Items Requiring Review */}
-          <div className="p-5 bg-white rounded-lg border border-[#E1E3DD] shadow-2xs space-y-1">
-            <div className="text-[11px] font-semibold uppercase tracking-wider text-[#202923]/60">
-              Items Requiring Review
+          {/* Card 4: Items Needing Review */}
+          <div className="p-5 bg-white rounded-lg border border-[#E1E3DD] space-y-1">
+            <div className="text-xs font-medium text-[#202923]/65">
+              Items needing review
             </div>
-            <div className="text-2xl sm:text-3xl font-mono font-bold text-[#202923]">
+            <div className="text-2xl sm:text-3xl font-mono tabular-nums font-bold text-[#202923]">
               {summary.needsReviewCount} Items
             </div>
             <div className="text-[11px] text-[#202923]/60">
-              {summary.unmatchedProductsCount} unmatched catalog, pack size variances
+              {summary.unmatchedProductsCount} unmatched catalog, pack size checks
             </div>
           </div>
         </div>
@@ -469,7 +467,7 @@ export const DemoDashboard: React.FC<DemoDashboardProps> = ({
                   : 'border-transparent text-[#202923]/60 hover:text-[#202923]'
               }`}
             >
-              Audit Findings ({findings.length})
+              Findings worth reviewing ({findings.length})
             </button>
 
             <button
@@ -482,16 +480,13 @@ export const DemoDashboard: React.FC<DemoDashboardProps> = ({
                 }
                 setActiveTab('scenario');
               }}
-              className={`pb-3 border-b-2 transition-colors cursor-pointer whitespace-nowrap flex items-center gap-1.5 ${
+              className={`pb-3 border-b-2 transition-colors cursor-pointer whitespace-nowrap ${
                 activeTab === 'scenario'
                   ? 'border-[#214B3D] text-[#214B3D]'
                   : 'border-transparent text-[#202923]/60 hover:text-[#202923]'
               }`}
             >
-              <span>Test a Scenario (Live Recalculation)</span>
-              <span className="px-1.5 py-0.5 text-[10px] bg-[#214B3D]/10 text-[#214B3D] rounded-xs font-medium">
-                Interactive
-              </span>
+              Adjust Invoice Values
             </button>
 
             <button
@@ -502,7 +497,7 @@ export const DemoDashboard: React.FC<DemoDashboardProps> = ({
                   : 'border-transparent text-[#202923]/60 hover:text-[#202923]'
               }`}
             >
-              Audited Invoices ({invoices.length})
+              Reviewed Invoices ({invoices.length})
             </button>
 
             <button
@@ -513,7 +508,7 @@ export const DemoDashboard: React.FC<DemoDashboardProps> = ({
                   : 'border-transparent text-[#202923]/60 hover:text-[#202923]'
               }`}
             >
-              Contract Price List ({priceList.length})
+              Agreed Price List ({priceList.length})
             </button>
           </nav>
         </div>
@@ -524,7 +519,7 @@ export const DemoDashboard: React.FC<DemoDashboardProps> = ({
             {/* Filter Bar */}
             <div className="flex flex-col md:flex-row md:items-center justify-between gap-3 text-xs">
               <div className="flex flex-wrap items-center gap-2">
-                <span className="text-[#202923]/60 font-medium">Category:</span>
+                <span className="text-[#202923]/60 font-medium">Filter:</span>
                 <button
                   onClick={() => setSelectedFindingFilter('all')}
                   className={`px-2.5 py-1 rounded-sm border cursor-pointer transition-colors ${
@@ -543,7 +538,7 @@ export const DemoDashboard: React.FC<DemoDashboardProps> = ({
                       : 'bg-white text-[#202923]/70 border-[#E1E3DD] hover:text-[#202923]'
                   }`}
                 >
-                  Rate Overcharges ({summary.discrepancyCount})
+                  Pricing Differences ({summary.discrepancyCount})
                 </button>
                 <button
                   onClick={() => setSelectedFindingFilter('duplicate')}
@@ -553,7 +548,7 @@ export const DemoDashboard: React.FC<DemoDashboardProps> = ({
                       : 'bg-white text-[#202923]/70 border-[#E1E3DD] hover:text-[#202923]'
                   }`}
                 >
-                  Duplicates ({summary.duplicateInvoiceCount})
+                  Possible Duplicates ({summary.duplicateInvoiceCount})
                 </button>
                 <button
                   onClick={() => setSelectedFindingFilter('review')}
@@ -597,12 +592,12 @@ export const DemoDashboard: React.FC<DemoDashboardProps> = ({
                 <table className="w-full text-left text-xs border-collapse">
                   <thead>
                     <tr className="bg-[#F8F7F3] border-b border-[#E1E3DD] text-[#202923]/70 font-semibold">
-                      <th className="py-3 px-4">Invoice Line / Supplier</th>
-                      <th className="py-3 px-4">Agreed Product (Catalog)</th>
-                      <th className="py-3 px-4 text-right">Agreed Rate</th>
-                      <th className="py-3 px-4 text-right">Billed Rate</th>
+                      <th className="py-3 px-4">Product & Supplier</th>
+                      <th className="py-3 px-4">Invoice Reference</th>
+                      <th className="py-3 px-4 text-right">Agreed Price</th>
+                      <th className="py-3 px-4 text-right">Charged Price</th>
                       <th className="py-3 px-4 text-right">Qty</th>
-                      <th className="py-3 px-4 text-right">Discrepancy</th>
+                      <th className="py-3 px-4 text-right">Difference</th>
                       <th className="py-3 px-4 text-center">Status</th>
                       <th className="py-3 px-4 text-right">Actions</th>
                     </tr>
@@ -623,42 +618,34 @@ export const DemoDashboard: React.FC<DemoDashboardProps> = ({
                           f.findingType === 'potential_mismatch' ||
                           f.findingType === 'pack_size_discrepancy';
 
+                        const humanProductName = isDup
+                          ? `Possible Duplicate: ${f.invoiceNumber}`
+                          : f.matchedAgreedProduct?.name || f.invoiceItem.rawDescription;
+
                         return (
                           <tr key={f.id} className="hover:bg-[#F8F7F3]/60 transition-colors">
-                            {/* Invoice Line / Supplier */}
+                            {/* Product & Supplier (Human-Readable First) */}
                             <td className="py-3 px-4">
                               <div className="font-semibold text-[#202923]">
-                                {f.invoiceItem.rawDescription}
+                                {humanProductName}
                               </div>
                               <div className="text-[11px] text-[#202923]/60">
-                                {f.invoiceNumber} · {f.supplierName}
+                                {f.supplierName}
                               </div>
                             </td>
 
-                            {/* Agreed Catalog */}
+                            {/* Invoice Reference (Secondary Invoice Text / Code) */}
                             <td className="py-3 px-4">
-                              {f.matchedAgreedProduct ? (
-                                <div>
-                                  <span className="font-medium text-[#202923]">
-                                    {f.matchedAgreedProduct.name}
-                                  </span>
-                                  <span className="text-[11px] font-mono text-[#202923]/60 block">
-                                    SKU: {f.matchedAgreedProduct.sku}
-                                  </span>
-                                </div>
-                              ) : isDup ? (
-                                <span className="font-medium text-[#BE825B]">
-                                  Duplicate Document Submission
-                                </span>
-                              ) : (
-                                <span className="text-[#202923]/50 italic">
-                                  Not in agreed price schedule
-                                </span>
-                              )}
+                              <div className="font-mono text-[11px] text-[#202923]">
+                                {f.invoiceNumber}
+                              </div>
+                              <div className="text-[11px] text-[#202923]/55 truncate max-w-[200px]">
+                                {isDup ? 'Re-submitted document' : f.invoiceItem.rawDescription}
+                              </div>
                             </td>
 
-                            {/* Agreed Rate */}
-                            <td className="py-3 px-4 text-right font-mono">
+                            {/* Agreed Price */}
+                            <td className="py-3 px-4 text-right font-mono tabular-nums">
                               {f.agreedPrice > 0 ? (
                                 <span className="text-[#214B3D] font-semibold">
                                   ${f.agreedPrice.toFixed(2)}
@@ -668,49 +655,43 @@ export const DemoDashboard: React.FC<DemoDashboardProps> = ({
                               )}
                             </td>
 
-                            {/* Billed Rate */}
-                            <td className="py-3 px-4 text-right font-mono font-semibold text-[#202923]">
+                            {/* Charged Price */}
+                            <td className="py-3 px-4 text-right font-mono tabular-nums font-semibold text-[#202923]">
                               ${f.invoicedPrice.toFixed(2)}
                             </td>
 
                             {/* Quantity */}
-                            <td className="py-3 px-4 text-right font-mono">
+                            <td className="py-3 px-4 text-right font-mono tabular-nums">
                               {f.quantity} {f.invoiceItem.unit}
                             </td>
 
-                            {/* Discrepancy Amount */}
-                            <td className="py-3 px-4 text-right font-mono font-bold">
+                            {/* Difference */}
+                            <td className="py-3 px-4 text-right font-mono tabular-nums font-bold">
                               {isOver ? (
                                 <span className="text-[#A7443E]">
                                   +${f.potentialOvercharge.toFixed(2)}
                                 </span>
                               ) : isDup ? (
                                 <span className="text-[#BE825B]">
-                                  +${f.potentialOvercharge.toFixed(2)} (dup)
+                                  ${f.potentialOvercharge.toFixed(2)} (dup)
                                 </span>
                               ) : isReview ? (
                                 <span className="text-[#202923]/70 font-normal">
-                                  Needs Review
+                                  Needs review
                                 </span>
                               ) : (
                                 <span className="text-[#214B3D]">$0.00</span>
                               )}
                             </td>
 
-                            {/* Status */}
-                            <td className="py-3 px-4 text-center">
+                            {/* Status (Zero-Pill Clean Text) */}
+                            <td className="py-3 px-4 text-center text-[11px] font-medium">
                               {f.status === 'confirmed' ? (
-                                <span className="px-2 py-0.5 text-[10px] font-semibold text-emerald-800 bg-emerald-50 rounded-xs">
-                                  Confirmed
-                                </span>
+                                <span className="text-[#214B3D]">Confirmed</span>
                               ) : f.status === 'dismissed' ? (
-                                <span className="px-2 py-0.5 text-[10px] font-semibold text-gray-600 bg-gray-100 rounded-xs">
-                                  Dismissed
-                                </span>
+                                <span className="text-[#202923]/45">Dismissed</span>
                               ) : (
-                                <span className="px-2 py-0.5 text-[10px] font-semibold text-[#A7443E] bg-[#FBF1F0] rounded-xs">
-                                  Action Needed
-                                </span>
+                                <span className="text-[#A7443E]">Needs review</span>
                               )}
                             </td>
 
@@ -720,16 +701,16 @@ export const DemoDashboard: React.FC<DemoDashboardProps> = ({
                                 <button
                                   onClick={() => setEvidenceFinding(f)}
                                   className="px-2 py-1 text-[11px] font-medium text-[#202923] bg-[#F8F7F3] hover:bg-[#E7EDE5] border border-[#E1E3DD] rounded-xs cursor-pointer"
-                                  title="View exact calculation proof"
+                                  title="See how this was calculated"
                                 >
-                                  Proof
+                                  Details
                                 </button>
 
                                 {isOver && (
                                   <button
                                     onClick={() => setEmailFinding(f)}
                                     className="px-2 py-1 text-[11px] font-medium text-[#214B3D] bg-[#F2F5F0] hover:bg-[#E7EDE5] border border-[#214B3D]/30 rounded-xs cursor-pointer"
-                                    title="Draft polite supplier email"
+                                    title="Draft supplier email"
                                   >
                                     Email
                                   </button>
@@ -741,9 +722,9 @@ export const DemoDashboard: React.FC<DemoDashboardProps> = ({
                                       handleOpenScenarioForLine(f.invoiceId, f.lineIndex)
                                     }
                                     className="px-2 py-1 text-[11px] font-medium text-[#202923]/70 hover:text-[#202923] border border-[#E1E3DD] rounded-xs cursor-pointer"
-                                    title="Edit price/qty to test scenario"
+                                    title="Adjust billed price or quantity"
                                   >
-                                    Edit
+                                    Adjust
                                   </button>
                                 )}
 
@@ -781,18 +762,18 @@ export const DemoDashboard: React.FC<DemoDashboardProps> = ({
           </div>
         )}
 
-        {/* TAB 2: TEST A SCENARIO (LIVE IN-BROWSER RECALCULATION) */}
+        {/* TAB 2: ADJUST INVOICE VALUES */}
         {activeTab === 'scenario' && (
           <div className="bg-white rounded-lg border border-[#E1E3DD] p-6 sm:p-8 shadow-xs space-y-6">
             <div className="border-b border-[#E1E3DD] pb-4">
-              <span className="text-[11px] font-semibold uppercase tracking-wider text-[#214B3D] block mb-1">
-                Deterministic Audit Sandbox
+              <span className="text-xs font-medium text-[#214B3D] block mb-1">
+                Interactive Value Check
               </span>
               <h3 className="text-xl font-bold text-[#202923]">
-                Test a Scenario with Live Recalculation
+                Adjust Invoice Values & Re-check
               </h3>
               <p className="mt-1 text-xs text-[#202923]/75 max-w-2xl">
-                Change the billed unit rate or quantity on any invoice line to see how PriceGuard dynamically recomputes overcharges, separates duplicates, and evaluates contractual variances in real time.
+                Change the charged unit rate or quantity on any invoice line to see how PriceGuard updates potential pricing differences while keeping duplicates separate.
               </p>
             </div>
 
@@ -910,20 +891,20 @@ export const DemoDashboard: React.FC<DemoDashboardProps> = ({
                     return (
                       <div className="text-xs pt-2 border-t border-[#E1E3DD] space-y-1">
                         <div className="flex justify-between">
-                          <span className="text-[#202923]/60">Contract Agreed Rate:</span>
+                          <span className="text-[#202923]/60">Agreed price:</span>
                           <span className="font-mono font-semibold text-[#214B3D]">
                             {agreedRate !== null ? `$${agreedRate.toFixed(2)}` : 'Unmatched'}
                           </span>
                         </div>
                         {simDiff !== null && (
                           <div className="flex justify-between">
-                            <span className="text-[#202923]/60">Simulated Overcharge:</span>
+                            <span className="text-[#202923]/60">Updated difference:</span>
                             <span
                               className={`font-mono font-bold ${
                                 simDiff > 0 ? 'text-[#A7443E]' : 'text-[#214B3D]'
                               }`}
                             >
-                              {simDiff > 0 ? `+$${simDiff.toFixed(2)}` : '$0.00 (Agreed or Lower)'}
+                              {simDiff > 0 ? `+$${simDiff.toFixed(2)}` : '$0.00 (Matches Agreement)'}
                             </span>
                           </div>
                         )}
@@ -1009,7 +990,7 @@ export const DemoDashboard: React.FC<DemoDashboardProps> = ({
                       onClick={() => handleOpenScenarioForLine(inv.id, 0)}
                       className="text-[#214B3D] font-semibold hover:underline cursor-pointer"
                     >
-                      Test in Sandbox
+                      Adjust line values
                     </button>
                   </div>
                 </div>
@@ -1084,17 +1065,17 @@ export const DemoDashboard: React.FC<DemoDashboardProps> = ({
         </div>
       </main>
 
-      {/* EVIDENCE PROOF MODAL */}
+      {/* EVIDENCE DETAILS MODAL */}
       {evidenceFinding && (
         <div className="fixed inset-0 z-50 bg-black/45 flex items-center justify-center p-4">
           <div className="bg-white max-w-lg w-full rounded-lg border border-[#E1E3DD] shadow-xl p-6 space-y-4 text-left">
             <div className="flex items-center justify-between border-b border-[#E1E3DD] pb-3">
               <div>
                 <h4 className="text-sm font-bold text-[#202923]">
-                  Audit Mathematical Proof & Evidence
+                  Finding Details & Calculation
                 </h4>
                 <p className="text-[11px] text-[#202923]/60">
-                  Document line reference and calculation formula
+                  Invoice line details, agreed price, and how this was calculated
                 </p>
               </div>
               <button
@@ -1107,8 +1088,8 @@ export const DemoDashboard: React.FC<DemoDashboardProps> = ({
 
             <div className="space-y-3 text-xs">
               <div>
-                <span className="text-[10px] uppercase tracking-wider text-[#202923]/50 block mb-1">
-                  Source Document
+                <span className="text-[11px] font-medium text-[#202923]/60 block mb-1">
+                  Source details
                 </span>
                 <div className="p-2.5 bg-[#F8F7F3] rounded-sm border border-[#E1E3DD] text-[#202923]">
                   {evidenceFinding.evidence.sourceDocument}
@@ -1116,8 +1097,8 @@ export const DemoDashboard: React.FC<DemoDashboardProps> = ({
               </div>
 
               <div>
-                <span className="text-[10px] uppercase tracking-wider text-[#202923]/50 block mb-1">
-                  Invoiced Line Reference
+                <span className="text-[11px] font-medium text-[#202923]/60 block mb-1">
+                  Invoice reference
                 </span>
                 <div className="p-2.5 bg-[#F8F7F3] rounded-sm border border-[#E1E3DD] text-[#202923]">
                   {evidenceFinding.evidence.sourceLineRef}
@@ -1125,8 +1106,8 @@ export const DemoDashboard: React.FC<DemoDashboardProps> = ({
               </div>
 
               <div>
-                <span className="text-[10px] uppercase tracking-wider text-[#202923]/50 block mb-1">
-                  Contract Agreement Reference
+                <span className="text-[11px] font-medium text-[#202923]/60 block mb-1">
+                  Agreed price schedule
                 </span>
                 <div className="p-2.5 bg-[#F8F7F3] rounded-sm border border-[#E1E3DD] text-[#202923]">
                   {evidenceFinding.evidence.agreedRecordRef}
@@ -1134,8 +1115,8 @@ export const DemoDashboard: React.FC<DemoDashboardProps> = ({
               </div>
 
               <div>
-                <span className="text-[10px] uppercase tracking-wider text-[#202923]/50 block mb-1">
-                  Deterministic Calculation
+                <span className="text-[11px] font-medium text-[#202923]/60 block mb-1">
+                  How this was calculated
                 </span>
                 <div className="p-3 bg-[#F2F5F0] rounded-sm border border-[#214B3D]/30 text-[#214B3D] font-mono font-medium">
                   {evidenceFinding.evidence.calculationExplanation}
@@ -1144,8 +1125,8 @@ export const DemoDashboard: React.FC<DemoDashboardProps> = ({
 
               {evidenceFinding.evidence.uncertaintyNotes && (
                 <div>
-                  <span className="text-[10px] uppercase tracking-wider text-[#BE825B] block mb-1">
-                    Review Consideration
+                  <span className="text-[11px] font-medium text-[#BE825B] block mb-1">
+                    Why it needs review
                   </span>
                   <div className="p-2.5 bg-[#FAF4ED] rounded-sm border border-[#BE825B]/30 text-[#202923]/80">
                     {evidenceFinding.evidence.uncertaintyNotes}

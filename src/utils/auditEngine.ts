@@ -191,10 +191,10 @@ export function runInvoiceAudit(
         status: 'potential',
         evidence: {
           sourceDocument: `${invoice.sourceFileName} (Invoice #${invoice.invoiceNumber})`,
-          sourceLineRef: `Invoice #${invoice.invoiceNumber} with total $${invoice.totalAmount.toFixed(2)}`,
-          agreedRecordRef: `Identical invoice number previously processed for ${invoice.supplierName}`,
-          calculationExplanation: `Duplicate billing: entire invoice amount ($${invoice.totalAmount.toFixed(2)}) is identified as duplicate exposure. This is reported separately and NOT combined into line-item overcharges.`,
-          uncertaintyNotes: 'Verify whether supplier re-issued the document or if this represents a duplicate payment risk.'
+          sourceLineRef: `Invoice #${invoice.invoiceNumber} totaling $${invoice.totalAmount.toFixed(2)}`,
+          agreedRecordRef: `Same invoice number already recorded for ${invoice.supplierName}`,
+          calculationExplanation: `Possible duplicate invoice: full invoice amount ($${invoice.totalAmount.toFixed(2)}) is flagged separately and kept out of pricing differences.`,
+          uncertaintyNotes: 'Check whether the supplier re-sent an existing invoice or if there is a duplicate payment risk.'
         }
       });
       // Skip processing duplicate lines to prevent double-counting line items
@@ -284,10 +284,10 @@ export function runInvoiceAudit(
           status: 'potential',
           evidence: {
             sourceDocument: `${invoice.sourceFileName} (Line ${item.lineIndex + 1})`,
-            sourceLineRef: `"${item.rawDescription}" (Code: ${item.rawCode || 'N/A'}) - Qty: ${item.quantity} ${item.unit} @ $${item.invoicedUnitPrice.toFixed(2)}`,
-            agreedRecordRef: 'No corresponding item found in agreed price list',
-            calculationExplanation: 'Item cannot be automatically verified against agreed price list. Spend isolated as unmatched.',
-            uncertaintyNotes: 'Confirm whether this product was purchased under a separate contract or spot purchase.'
+            sourceLineRef: `${item.rawDescription} (Code: ${item.rawCode || 'N/A'}) - ${item.quantity} ${item.unit} @ $${item.invoicedUnitPrice.toFixed(2)}`,
+            agreedRecordRef: 'Not found in agreed price list',
+            calculationExplanation: 'This item is not listed on the agreed price schedule and needs a quick manual check.',
+            uncertaintyNotes: 'Confirm whether this was an off-contract purchase or an updated product name.'
           }
         });
         continue;
@@ -350,10 +350,10 @@ export function runInvoiceAudit(
           status: 'potential',
           evidence: {
             sourceDocument: `${invoice.sourceFileName} (Line ${item.lineIndex + 1})`,
-            sourceLineRef: `Invoice date: ${invDate} (Line: "${item.rawDescription}" @ $${invoicedRate.toFixed(2)})`,
-            agreedRecordRef: `Contract effective period: ${effectiveFrom || 'baseline'} to ${effectiveTo || 'open'}`,
-            calculationExplanation: `${dateMismatchReason} Overcharge held at $0.00 until applicable historical agreement is confirmed.`,
-            uncertaintyNotes: 'Verify whether a prior price agreement governed this purchase date.'
+            sourceLineRef: `Invoice date: ${invDate} (${item.rawDescription} @ $${invoicedRate.toFixed(2)})`,
+            agreedRecordRef: `Agreement period: ${effectiveFrom || 'start'} to ${effectiveTo || 'open'}`,
+            calculationExplanation: `${dateMismatchReason} Held for review until the applicable price agreement is confirmed.`,
+            uncertaintyNotes: 'Confirm whether an earlier price schedule applies to this delivery date.'
           }
         });
         continue;
@@ -366,10 +366,12 @@ export function runInvoiceAudit(
         Math.abs(unitDiff) > 0.01
       );
 
-      if (packConflict && Math.abs(unitDiff) > 0.01) {
+      if (!unitCompatible || (packConflict && Math.abs(unitDiff) > 0.01)) {
         // UNCERTAIN UNIT/PACK CONVERSION: Never calculate a confirmed overcharge!
         needsReviewCount++;
-        needsReviewTotalAmount += Math.abs(unitDiff * item.quantity);
+        needsReviewTotalAmount += !unitCompatible
+          ? (item.lineTotal || (item.quantity * invoicedRate))
+          : Math.abs(unitDiff * item.quantity);
 
         findings.push({
           id: `pack-${invoice.id}-${item.id}`,
@@ -391,10 +393,10 @@ export function runInvoiceAudit(
           status: 'potential',
           evidence: {
             sourceDocument: `${invoice.sourceFileName} (Line ${item.lineIndex + 1})`,
-            sourceLineRef: `Invoiced as "${item.rawDescription}" with unit "${item.unit || 'unit'}" (pack: "${item.packSize || 'N/A'}") @ $${invoicedRate.toFixed(2)}`,
-            agreedRecordRef: `Agreed: "${matchedProduct.name}" (${matchedProduct.sku}) with unit "${matchedProduct.unit}" (pack: "${matchedProduct.packSize || 'N/A'}") @ $${matchedProduct.agreedPrice.toFixed(2)}`,
-            calculationExplanation: `Packaging format or unit differs between agreement and invoice. Overcharge held at $0.00 until packaging multiplier is verified by operator.`,
-            uncertaintyNotes: 'Verify packaging conversion multiplier before requesting supplier credit.'
+            sourceLineRef: `Billed as ${item.rawDescription} (${item.unit || 'unit'}${item.packSize ? `, ${item.packSize}` : ''}) at $${invoicedRate.toFixed(2)}`,
+            agreedRecordRef: `Agreed item: ${matchedProduct.name} (${matchedProduct.unit}${matchedProduct.packSize ? `, ${matchedProduct.packSize}` : ''}) at $${matchedProduct.agreedPrice.toFixed(2)}`,
+            calculationExplanation: `Unit or pack size differs between the invoice and the agreed price list. Held for review until the pack size is confirmed.`,
+            uncertaintyNotes: 'Check whether the supplier billed a single unit at a case rate or changed pack size.'
           }
         });
       } else if (matchConfidence < 0.80) {
@@ -424,10 +426,10 @@ export function runInvoiceAudit(
           status: 'potential',
           evidence: {
             sourceDocument: `${invoice.sourceFileName} (Line ${item.lineIndex + 1})`,
-            sourceLineRef: `Invoiced as "${item.rawDescription}" @ $${invoicedRate.toFixed(2)}`,
-            agreedRecordRef: `Candidate: "${matchedProduct.name}" (${matchedProduct.sku}) @ $${agreedRate.toFixed(2)} (Confidence: ${Math.round(matchConfidence * 100)}%)`,
-            calculationExplanation: `Description is ambiguous. If verified: ($${invoicedRate.toFixed(2)} - $${agreedRate.toFixed(2)}) x ${item.quantity} = $${potOvercharge.toFixed(2)} potential difference.`,
-            uncertaintyNotes: 'Product description is ambiguous. Please confirm if this is the identical product specification before requesting credit.'
+            sourceLineRef: `Billed as ${item.rawDescription} at $${invoicedRate.toFixed(2)}`,
+            agreedRecordRef: `Possible match: ${matchedProduct.name} (${matchedProduct.sku}) at $${agreedRate.toFixed(2)}`,
+            calculationExplanation: `Product name needs confirmation. If these are the same item: ($${invoicedRate.toFixed(2)} - $${agreedRate.toFixed(2)}) x ${item.quantity} = $${potOvercharge.toFixed(2)} potential difference.`,
+            uncertaintyNotes: 'Confirm whether this billed line matches the agreed product before contacting the supplier.'
           }
         });
       } else if (unitDiff > 0.005) {
@@ -456,9 +458,9 @@ export function runInvoiceAudit(
           status: 'potential',
           evidence: {
             sourceDocument: `${invoice.sourceFileName} (Line ${item.lineIndex + 1})`,
-            sourceLineRef: `Invoice line: "${item.rawDescription}" charged at $${invoicedRate.toFixed(2)}/${item.unit} (Qty: ${item.quantity})`,
-            agreedRecordRef: `Agreed agreement: "${matchedProduct.name}" (${matchedProduct.sku}) at $${matchedProduct.agreedPrice.toFixed(2)}/${matchedProduct.unit}${unitExplanation ? ` [${unitExplanation}]` : ''}`,
-            calculationExplanation: `($${invoicedRate.toFixed(2)} charged - $${agreedRate.toFixed(2)} agreed) x ${item.quantity} ${item.unit} = $${overcharge.toFixed(2)} potential price overcharge`,
+            sourceLineRef: `${item.rawDescription} billed at $${invoicedRate.toFixed(2)}/${item.unit} (${item.quantity} ${item.unit})`,
+            agreedRecordRef: `${matchedProduct.name} (${matchedProduct.sku}) agreed at $${matchedProduct.agreedPrice.toFixed(2)}/${matchedProduct.unit}${unitExplanation ? ` [${unitExplanation}]` : ''}`,
+            calculationExplanation: `($${invoicedRate.toFixed(2)} charged - $${agreedRate.toFixed(2)} agreed) x ${item.quantity} ${item.unit} = $${overcharge.toFixed(2)} potential pricing difference`,
             uncertaintyNotes: undefined
           }
         });

@@ -1,89 +1,71 @@
 import React from 'react';
 
 export const DetectionGrid: React.FC = () => {
-  const benefits = [
+  const outcomes = [
     {
-      title: 'Spot potential overcharges',
-      desc: 'Identify prices that differ from supplier agreements.',
-      visual: (
-        <div className="p-3 bg-[#F8F7F3] rounded-md border border-[#E1E3DD] space-y-1.5 text-xs text-left">
-          <div className="flex items-center justify-between">
-            <span className="text-[#202923] font-medium">Billed Price</span>
-            <span className="font-mono font-bold text-[#A7443E]">$4.50/kg</span>
-          </div>
-          <div className="flex items-center justify-between border-t border-[#E1E3DD] pt-1 text-[11px] text-[#202923]/70">
-            <span>Agreed Rate</span>
-            <span className="font-mono text-[#214B3D]">$4.00/kg</span>
-          </div>
-        </div>
-      )
+      num: '01.',
+      title: 'Spot pricing issues',
+      desc: 'Catch supplier charges that differ from your agreed price schedules before they repeat across deliveries.',
+      highlightLabel: 'Chicken Breast · INV-8841',
+      highlightValue: '+$0.50 / kg above agreement'
     },
     {
-      title: 'Save time',
-      desc: 'Focus on invoices that need attention.',
-      visual: (
-        <div className="p-3 bg-[#F8F7F3] rounded-md border border-[#E1E3DD] space-y-1.5 text-xs text-left">
-          <div className="flex items-center justify-between">
-            <span className="text-[#202923]">120 line items</span>
-            <span className="text-[#214B3D] font-medium">117 matched</span>
-          </div>
-          <div className="flex items-center justify-between border-t border-[#E1E3DD] pt-1 text-[11px]">
-            <span className="text-[#A7443E] font-semibold">3 need attention</span>
-            <span className="text-[#202923]/60">97% manual time saved</span>
-          </div>
-        </div>
-      )
+      num: '02.',
+      title: 'Catch duplicate invoice risks',
+      desc: 'Identify re-submitted invoices separately so your accounts team can investigate before paying twice.',
+      highlightLabel: 'LinenCraft · INV-4401 Copy',
+      highlightValue: 'Flagged before payment'
     },
     {
-      title: 'Resolve issues with evidence',
-      desc: 'Review the supporting numbers before contacting suppliers.',
-      visual: (
-        <div className="p-3 bg-[#F8F7F3] rounded-md border border-[#E1E3DD] space-y-1.5 text-xs text-left">
-          <div className="flex items-center justify-between text-[11px]">
-            <span className="text-[#202923] font-mono">Invoice #INV-8841</span>
-            <span className="text-[#214B3D] font-mono">Schedule B</span>
-          </div>
-          <div className="border-t border-[#E1E3DD] pt-1 text-[11px] font-mono text-[#A7443E] font-semibold">
-            Proof: ($4.50 - $4.00) x 600 = $300
-          </div>
-        </div>
-      )
+      num: '03.',
+      title: 'Review charges with evidence',
+      desc: 'Give your team the exact invoice reference, agreed rate, and prepared supplier draft in one place.',
+      highlightLabel: 'Ready for supplier follow-up',
+      highlightValue: 'Draft email & summary included'
     }
   ];
 
   return (
     <section id="benefits" className="py-16 md:py-24 border-b border-[#E1E3DD] bg-[#F8F7F3]">
       <div className="max-w-7xl mx-auto px-6">
-        <div className="max-w-2xl mb-12 text-left">
-          <div className="text-xs font-semibold uppercase tracking-wider text-[#BE825B] mb-2">
+        <div className="max-w-2xl mb-10 text-left">
+          <div className="text-xs font-medium text-[#BE825B] mb-2">
             Business Benefits
           </div>
           <h2 className="text-2xl sm:text-3xl lg:text-4xl font-bold tracking-tight text-[#202923] text-balance">
-            More control. Less manual checking.
+            More visibility. Less manual checking.
           </h2>
           <p className="mt-2 text-base text-[#202923]/80">
-            Spend minutes reviewing flagged variances instead of hours checking rows by hand.
+            Focus your team on the few issues worth investigating instead of checking every row by hand.
           </p>
         </div>
 
-        {/* 3 Outcome Visuals */}
-        <div className="grid grid-cols-1 md:grid-cols-3 gap-6">
-          {benefits.map((b) => (
+        {/* Compact Editorial Outcome Strips */}
+        <div className="bg-white rounded-xl border border-[#E1E3DD] divide-y divide-[#E1E3DD] text-left">
+          {outcomes.map((item) => (
             <div
-              key={b.title}
-              className="p-6 rounded-lg border border-[#E1E3DD] bg-white text-left flex flex-col justify-between space-y-5 shadow-xs"
+              key={item.num}
+              className="p-6 sm:px-8 flex flex-col md:flex-row md:items-center justify-between gap-4"
             >
-              <div className="space-y-2.5">
-                <h3 className="text-base sm:text-lg font-bold text-[#202923]">
-                  {b.title}
-                </h3>
-                <p className="text-xs sm:text-sm text-[#202923]/75 leading-relaxed">
-                  {b.desc}
-                </p>
+              <div className="flex items-start gap-4 max-w-2xl">
+                <span className="font-mono text-xs font-bold text-[#214B3D] pt-1 shrink-0">
+                  {item.num}
+                </span>
+                <div className="space-y-1">
+                  <h3 className="text-base sm:text-lg font-bold text-[#202923]">
+                    {item.title}
+                  </h3>
+                  <p className="text-xs sm:text-sm text-[#202923]/75 leading-relaxed">
+                    {item.desc}
+                  </p>
+                </div>
               </div>
 
-              <div>
-                {b.visual}
+              <div className="md:text-right shrink-0 pl-8 md:pl-0">
+                <div className="text-[11px] text-[#202923]/55">{item.highlightLabel}</div>
+                <div className="text-xs font-mono font-semibold text-[#214B3D] mt-0.5">
+                  {item.highlightValue}
+                </div>
               </div>
             </div>
           ))}
